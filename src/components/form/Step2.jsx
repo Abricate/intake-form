@@ -1,0 +1,258 @@
+import React from 'react'
+import { connect } from 'react-redux'
+import { Col, Row, Button, Form, FormGroup, Label, Input, FormText } from 'reactstrap';
+
+import Dropzone from 'react-dropzone';
+
+import { setJobRequest } from '../../actions';
+
+import 'react-datetime/css/react-datetime.css';
+import Datetime from 'react-datetime';
+
+const Material = [
+  'Acrylic',
+  'Delrin',
+  'Coroplast',
+  'Polycarbonate',
+  'Abs',
+  'Silicon rubber',
+  'Mylar',
+  'Birch Plywood',
+  'Walnut Plywood',
+  'Bamboo Ply',
+  'Aluminum 5052',
+  'Aluminum 6061',
+  'Aluminum 6063',
+  'Aluminum 7075',
+  'Cold rolled Steel 1083',
+  'Hot rolled Steel',
+  'Stainless Steel 304',
+  'Fabric',
+  'Silk',
+  'Cotton',
+  'Felt',
+  'Ripstop nylon',
+  'Leather',
+  'Fiber glass',
+  'Carbon fiber',
+  'Paper',
+  'Cardboard',
+  'Pressboard',
+  'Melamine',
+  'Cork',
+  'Corian',
+  'MDF',
+  'Depron Foam',
+  'Magnetic sheet',
+  'Teflon',
+  'Special Order from Supplier Catalog',
+  'Multiple material customer specified.'
+];
+
+const MaterialThickness = [
+  '1/16"',
+  '1/8"',
+  '3/16"',
+  '1/4"',
+  '3/8"',
+  '1/2"'
+];
+
+const SheetMetalGage = [
+  '30',
+  '28',
+  '26',
+  '24',
+  '22',
+  '20',
+  '18',
+  '16',
+  '14',
+  '12',
+  '10'
+];
+
+const Area = [
+  '1ft x 1 ft',
+  '1ft x 2ft',
+  '2ft x 2ft',
+  '2ft x 4ft',
+  '4ft x 4ft',
+  '4ft x 8ft',
+  'Other'
+];
+
+const Color = [
+  'Clear',
+  'Black',
+  'White',
+  'Red',
+  'Yellow',
+  'Orange',
+  'Green',
+  'Blue'
+];
+
+const Tolerance = [
+  '2-6mm',
+  '1-2mm',
+  '1mm-500μm',
+  '500μm-200μm',
+  '200-100μm'
+];
+
+var DropzoneDemo = React.createClass({
+  onDrop: function (acceptedFiles, rejectedFiles) {
+    console.log('Accepted files: ', acceptedFiles);
+    console.log('Rejected files: ', rejectedFiles);
+  },
+
+  render: function () {
+    return (
+      <div>
+        <Dropzone style={{width: '100%', border: '3px dashed #666', padding: '30px', height: '200px', textAlign: 'center'}} onDrop={this.onDrop}>
+          <div>
+            <p>Drop your file(s) here.</p>
+            <p>Allowed file extensions: dxf, dwg, svg, ai.</p>
+            <p>Max file size: 100MB.</p>
+          </div>
+        </Dropzone>
+      </div>
+    );
+  }
+});
+
+
+function mkOptions(items) {
+  return ['', ...items].map(item => (
+    <option key={item}>{item}</option>
+  ));
+}
+
+const Step1 = ({ values, setValue }) => {
+  return (
+    <div>
+      <Form>
+        <FormGroup>
+          <Label for="material">Material</Label>
+          <Input type="select" name="material" id="material" onChange={setValue} value={values['material'] || ''}>
+            {mkOptions(Material)}
+          </Input>          
+          <FormText color="muted">Please choose a material.</FormText>
+        </FormGroup>
+        <FormGroup>
+          <Label for="materialThickness">Material Thickness</Label>
+          <Input type="select" name="materialThickness" id="materialThickness" onChange={setValue} value={values['materialThickness'] || ''}>
+            {mkOptions(MaterialThickness)}
+          </Input>
+        </FormGroup>
+        <FormGroup>
+          <Label for="sheetMetalGage">Sheet Metal Gage</Label>
+          <Input type="select" name="sheetMetalGage" id="sheetMetalGage" onChange={setValue} value={values['sheetMetalGage'] || ''}>
+            {mkOptions(SheetMetalGage)}
+          </Input>
+        </FormGroup>
+        <FormGroup>
+          <Label for="area">Area (Length and Width)</Label>
+          <Input type="select" name="area" id="area" onChange={setValue} value={values['area'] || ''}>
+            {mkOptions(Area)}
+          </Input>
+        </FormGroup>
+        <FormGroup>
+          <Label for="color">Color</Label>
+          <Input type="select" name="color" id="color" onChange={setValue} value={values['color'] || ''}>
+            {mkOptions(Color)}
+          </Input>
+        </FormGroup>
+
+        <FormGroup>
+          <Label for="">Upload Your File(s)</Label>
+          <DropzoneDemo />
+          <FormText color="muted">Please check your file before uploading. Use mm scale. All art work in the .dxf file will be quoted and cut. Remove all art/lines you don't want to cut including: dimensions, annotations, boarders, and hashes in the middle of circles. Check that all cutting lines are in one layer and all etching artwork is in a separate layer.</FormText>
+        </FormGroup>
+
+        <FormGroup>
+          <Label>Material Special Ordered from Supplier (please check MSDS that material is safe for laser cutting)</Label>
+          <table>
+            <thead>
+              <tr>
+                <th>Catalog Name</th>
+                <th>Catalog Link</th>
+                <th>Product Name</th>
+                <th>Catalog Product ID Number</th>
+                <th>Dimensions</th>
+                <th>Price</th>
+                <th>Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <Input type="text" name="catalogName" id="catalogName" onChange={setValue} value={values['catalogName'] || ''} />
+                </td>
+                <td>
+                  <Input type="text" name="catalogLink" id="catalogLink" onChange={setValue} value={values['catalogLink'] || ''} />
+                </td>
+                <td>
+                  <Input type="text" name="productName" id="productName" onChange={setValue} value={values['productName'] || ''} />
+                </td>
+                <td>
+                  <Input type="text" name="catalogProductId" id="catalogProductId" onChange={setValue} value={values['catalogProductId'] || ''} />
+                </td>
+                <td>
+                  <Input type="text" name="dimensions" id="dimensions" onChange={setValue} value={values['dimensions'] || ''} />
+                </td>
+                <td>
+                  <Input type="text" name="price" id="price" onChange={setValue} value={values['price'] || ''} />
+                </td>
+                <td>
+                  <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </FormGroup>
+                
+        <FormGroup>
+          <Label for="tolerance">Tolerance</Label>
+          <Input type="select" name="tolerance" id="tolerance" onChange={setValue} value={values['tolerance'] || ''}>
+            {mkOptions(Tolerance)}
+          </Input>
+        </FormGroup>
+
+        <FormGroup>
+          <Label for="comments">Job comments</Label>
+          <Input type="textarea" name="comments" id="comments" />
+          <FormText color="muted">Please include any special treatments or special notes about materials.</FormText>
+        </FormGroup>
+
+        <FormGroup>
+          <Label for="quantity">Quantity / How many do you need?</Label>
+          <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
+        </FormGroup>
+
+        <FormGroup>
+          <Label for="quantity">What date do you need your parts back by?</Label>
+          <Datetime timeFormat={false} />
+        </FormGroup>
+
+        
+        <Button className="w-100" color="primary">Add to Cart</Button>
+      </Form>
+    </div>
+  );
+};
+
+function mapStateToProps(state) {
+  return {
+    values: state.jobRequest
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    setValue: event => dispatch(setJobRequest({field: event.target.name, value: event.target.value}))
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Step1);
