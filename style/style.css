@@ -17,6 +17,10 @@ body {
   color: #41474a;
 }
 
+nav {
+  margin-bottom: 1em;
+}
+
 ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
   color: #caced0 !important;
 }

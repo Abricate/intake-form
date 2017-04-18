@@ -1,13 +1,24 @@
-import React from 'react'
+import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
 import { Col, Row, Button, Form, FormGroup, Label, Input, FormText } from 'reactstrap';
-
-import Dropzone from 'react-dropzone';
-
-import { setJobRequest } from '../../actions';
+import { withRouter } from 'react-router'
+import request from 'superagent';
+import _ from 'lodash';
 
 import 'react-datetime/css/react-datetime.css';
+import { FaTimesCircle } from 'react-icons/lib/fa';
+
 import Datetime from 'react-datetime';
+import Dropzone from 'react-dropzone';
+
+import ShoppingCart from './ShoppingCart';
+
+import {
+  addFilesToJobRequest,
+  addToCart,
+  removeFileFromJobRequest,
+  setJobRequest,
+} from '../../actions';
 
 const Material = [
   'Acrylic',
@@ -101,26 +112,62 @@ const Tolerance = [
   '200-100μm'
 ];
 
-var DropzoneDemo = React.createClass({
+// TODO: credit https://www.iconfinder.com/iconsets/document-file for icons
+const DropzoneUploader = connect(state => ({ files: state.jobRequest.files }), { addFilesToJobRequest, removeFileFromJobRequest })(React.createClass({
   onDrop: function (acceptedFiles, rejectedFiles) {
-    console.log('Accepted files: ', acceptedFiles);
-    console.log('Rejected files: ', rejectedFiles);
+    try {
+      const req = request.post('/uploads');
+      acceptedFiles.forEach(file => {
+        req.attach('files', file);
+      });
+      req.end( (err, res) => {
+        if(err) {
+          this.setState({error: true, details: err});
+        } else {
+          if(res.body.files) {
+            const files = _.map(res.body.files, ({ filename }, originalName) => (
+              { filename, originalName }
+            ));
+            this.props.addFilesToJobRequest(files);
+          }
+        }
+      });
+    } catch (e) {
+      this.setState({error: true, exception: e});
+    }
   },
 
+  removeFile: function(file) { return e => {
+    this.props.removeFileFromJobRequest(file);
+    e.stopPropagation();
+  }},
+  
   render: function () {
+    const { files } = this.props;
+
     return (
       <div>
-        <Dropzone style={{width: '100%', border: '3px dashed #666', padding: '30px', height: '200px', textAlign: 'center'}} onDrop={this.onDrop}>
-          <div>
-            <p>Drop your file(s) here.</p>
-            <p>Allowed file extensions: dxf, dwg, svg, ai.</p>
-            <p>Max file size: 100MB.</p>
-          </div>
+        <Dropzone
+          disablePreview={true}
+          activeStyle={{backgroundColor: '#e8e8e8'}}
+          style={{width: '100%', border: '3px dashed #666', padding: '30px', height: '200px', textAlign: 'center'}}
+          onDrop={this.onDrop}>
+          {files.length == 0 ? (
+            <div>
+              <p>Drop your file(s) here.</p>
+              <p>Allowed file extensions: dxf, dwg, svg, ai.</p>
+              <p>Max file size: 100MB.</p>
+            </div>
+          ) : (
+            files.map( (file, idx) => (
+              <div key={file.filename}>{file.originalName} <a href="#" className="text-danger" onClick={this.removeFile(file)} rel="button"><FaTimesCircle /> </a></div>
+            ))
+          )}
         </Dropzone>
       </div>
     );
   }
-});
+}));
 
 
 function mkOptions(items) {
@@ -129,7 +176,7 @@ function mkOptions(items) {
   ));
 }
 
-const Step1 = ({ values, setValue }) => {
+const Step2Form = ({ values, setValue, addToCart, history }) => {
   return (
     <div>
       <Form>
@@ -167,7 +214,7 @@ const Step1 = ({ values, setValue }) => {
 
         <FormGroup>
           <Label for="">Upload Your File(s)</Label>
-          <DropzoneDemo />
+          <DropzoneUploader />
           <FormText color="muted">Please check your file before uploading. Use mm scale. All art work in the .dxf file will be quoted and cut. Remove all art/lines you don't want to cut including: dimensions, annotations, boarders, and hashes in the middle of circles. Check that all cutting lines are in one layer and all etching artwork is in a separate layer.</FormText>
         </FormGroup>
 
@@ -237,7 +284,7 @@ const Step1 = ({ values, setValue }) => {
         </FormGroup>
 
         
-        <Button className="w-100" color="primary">Add to Cart</Button>
+        <Button onClick={() => { addToCart(values); history.push('#order-summary'); }} className="w-100" color="primary">Add to Cart</Button>
       </Form>
     </div>
   );
@@ -251,8 +298,30 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    setValue: event => dispatch(setJobRequest({field: event.target.name, value: event.target.value}))
+    setValue: event => dispatch(setJobRequest({field: event.target.name, value: event.target.value})),
+    addToCart: jobRequest => dispatch(addToCart(jobRequest))
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Step1);
+Step2Form.propTypes = {
+  match: PropTypes.object.isRequired,
+  location: PropTypes.object.isRequired,
+  history: PropTypes.object.isRequired
+};
+
+const ConnectedStep2Form = withRouter(connect(mapStateToProps, mapDispatchToProps)(Step2Form));
+
+const Step2 = ({ hasItemsInCart }) => (
+  <Row>
+    <Col xs="12" md={hasItemsInCart ? 9 : 12}>
+      <ConnectedStep2Form />
+    </Col>
+    {hasItemsInCart ? (
+      <Col md="3">
+        <ShoppingCart />
+      </Col>
+    ) : null}
+  </Row>
+);
+
+export default connect(state => ({ hasItemsInCart: state.cart.length > 0 }))(Step2);
