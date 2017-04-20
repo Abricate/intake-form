@@ -19,6 +19,9 @@ import './App.css';
 
 import Step1 from './components/form/Step1';
 import Step2 from './components/form/Step2';
+import Checkout from './components/form/Checkout';
+
+import Success from './components/Success';
 
 const footerStyle = {
   marginTop: '100px',
@@ -48,6 +51,8 @@ class App extends Component {
             <Container>            
               <Route exact path="/" component={Step1} />
               <Route path="/step2" component={Step2} />
+              <Route path="/checkout" component={Checkout} />
+              <Route path="/success" component={Success} />
             </Container>
 
             <Container fluid>

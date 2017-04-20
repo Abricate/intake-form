@@ -1,6 +1,17 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
-import { Col, Row, Button, Form, FormGroup, Label, Input, FormText } from 'reactstrap';
+import {
+  Button,
+  Col,
+  Form,
+  FormGroup,
+  FormText,
+  Input,
+  InputGroup,
+  InputGroupAddon,
+  Label,
+  Row,
+} from 'reactstrap';
 import { withRouter } from 'react-router'
 import request from 'superagent';
 import _ from 'lodash';
@@ -112,7 +123,7 @@ const Tolerance = [
   '200-100μm'
 ];
 
-// TODO: credit https://www.iconfinder.com/iconsets/document-file for icons
+// TODO: use and credit https://www.iconfinder.com/iconsets/document-file for icons
 const DropzoneUploader = connect(state => ({ files: state.jobRequest.files }), { addFilesToJobRequest, removeFileFromJobRequest })(React.createClass({
   onDrop: function (acceptedFiles, rejectedFiles) {
     try {
@@ -139,6 +150,7 @@ const DropzoneUploader = connect(state => ({ files: state.jobRequest.files }), {
 
   removeFile: function(file) { return e => {
     this.props.removeFileFromJobRequest(file);
+    e.preventDefault();
     e.stopPropagation();
   }},
   
@@ -176,7 +188,16 @@ function mkOptions(items) {
   ));
 }
 
-const Step2Form = ({ values, setValue, addToCart, history }) => {
+const Step2Form = ({ values, setValue, setValueRaw, addToCart, history }) => {
+  const decr = field => () => {
+    const value = parseInt(values['quantity']) - 1;
+    setValueRaw('quantity', value < 1 ? 1 : value)
+  };
+
+  const incr = field => () => {
+    setValueRaw('quantity', parseInt(values['quantity']) + 1)
+  };
+
   return (
     <div>
       <Form>
@@ -218,6 +239,7 @@ const Step2Form = ({ values, setValue, addToCart, history }) => {
           <FormText color="muted">Please check your file before uploading. Use mm scale. All art work in the .dxf file will be quoted and cut. Remove all art/lines you don't want to cut including: dimensions, annotations, boarders, and hashes in the middle of circles. Check that all cutting lines are in one layer and all etching artwork is in a separate layer.</FormText>
         </FormGroup>
 
+        {/*
         <FormGroup>
           <Label>Material Special Ordered from Supplier (please check MSDS that material is safe for laser cutting)</Label>
           <table>
@@ -259,7 +281,8 @@ const Step2Form = ({ values, setValue, addToCart, history }) => {
             </tbody>
           </table>
         </FormGroup>
-                
+        */}
+
         <FormGroup>
           <Label for="tolerance">Tolerance</Label>
           <Input type="select" name="tolerance" id="tolerance" onChange={setValue} value={values['tolerance'] || ''}>
@@ -275,7 +298,12 @@ const Step2Form = ({ values, setValue, addToCart, history }) => {
 
         <FormGroup>
           <Label for="quantity">Quantity / How many do you need?</Label>
-          <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
+
+          <InputGroup className="small">
+            <InputGroupAddon className="clickable" onClick={decr('quantity')}>-</InputGroupAddon>
+            <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
+            <InputGroupAddon className="clickable" onClick={incr('quantity')}>+</InputGroupAddon>
+          </InputGroup>
         </FormGroup>
 
         <FormGroup>
@@ -299,6 +327,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   return {
     setValue: event => dispatch(setJobRequest({field: event.target.name, value: event.target.value})),
+    setValueRaw: (field, value) => dispatch(setJobRequest({field, value})),
     addToCart: jobRequest => dispatch(addToCart(jobRequest))
   };
 }

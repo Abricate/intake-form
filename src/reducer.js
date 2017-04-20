@@ -18,7 +18,11 @@ function contactInfo(state = {country: 'United States'}, action) {
   }
 }
 
-function jobRequest(state = {files: [{ filename: 'test', originalName: 'foo'}]}, action) {
+const EmptyJobRequest = {
+  files: [{ filename: 'test', originalName: 'foo'}],
+  quantity: 1
+}
+function jobRequest(state = EmptyJobRequest, action) {
   switch(action.type) {
     case SET_JOB_REQUEST:
       return {

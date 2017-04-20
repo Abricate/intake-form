@@ -34,3 +34,16 @@ nav {
   color: #caced0 !important;
 }
 
+.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.input-group-addon.clickable:active {
+  background-color: #ccc;
+}
+
+.input-group.small {
+  max-width: 10rem;
+}
+
