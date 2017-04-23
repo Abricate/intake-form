@@ -20,7 +20,7 @@ class Checkout extends React.Component {
     this.setState({ submitting: true });
     request
       .post('/jobs')
-      .send(this.props.jobRequest)
+      .send(_.pick(this.props, ['cart', 'contactInfo']))
       .set('Accept', 'application/json')
       .end((error, res) => {
         if(error) {
@@ -36,7 +36,6 @@ class Checkout extends React.Component {
   render() {
     const {
       cart,
-      jobRequest,
 
       history,
     } = this.props;
@@ -65,7 +64,7 @@ class Checkout extends React.Component {
 function mapStateToProps(state) {
   return {
     cart: state.cart,
-    jobRequest: state.jobRequest
+    contactInfo: state.contactInfo
   };
 }
 

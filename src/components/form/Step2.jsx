@@ -308,7 +308,7 @@ const Step2Form = ({ values, setValue, setValueRaw, addToCart, history }) => {
 
         <FormGroup>
           <Label for="quantity">What date do you need your parts back by?</Label>
-          <Datetime timeFormat={false} />
+          <Datetime onChange={moment => setValueRaw('dueDate', moment.format('YYYY-MM-DD'))} name="dueDate" value={values['dueDate'] || ''} timeFormat={false} />
         </FormGroup>
 
         

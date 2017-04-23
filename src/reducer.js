@@ -9,7 +9,17 @@ import {
   SET_JOB_REQUEST,
 } from './actions';
 
-function contactInfo(state = {country: 'United States'}, action) {
+const defaultContactInfoForTesting = {
+  name: 'Foobar Baz',
+  email: 'foo@example.com',
+  phoneNumber: '(123) 456-7890',
+  address1: '1234 Foo Lane',
+  zipcode: '90210',
+  country: 'United States'
+}
+  
+
+function contactInfo(state = {country: 'United States', ...defaultContactInfoForTesting}, action) {
   switch(action.type) {
     case SET_CONTACT_INFO:
       return {...state, [action.field]: action.value};

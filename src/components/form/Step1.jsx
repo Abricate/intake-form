@@ -24,13 +24,13 @@ const Step1 = ({ values, setValue }) => {
         </FormGroup>
         <FormGroup>
           <Label>Address</Label>
-          <Input type="text" name="streetAddress" id="streetAddress_line1" onChange={setValue} value={values['streetAddress_line1'] || ''} placeholder="" />
+          <Input type="text" name="address1" id="address1" onChange={setValue} value={values['address1'] || ''} placeholder="" />
           <FormText color="muted">Street Address</FormText>
-          <Input type="text" name="streetAddress" id="streetAddress_line2" onChange={setValue} value={values['streetAddress_line2'] || ''}  placeholder="" />
+          <Input type="text" name="address2" id="address2" onChange={setValue} value={values['address2'] || ''}  placeholder="" />
           <FormText color="muted">Line 2</FormText>
           <Row>
             <Col>
-              <Input type="text" name="postalCode" id="postalCode" onChange={setValue} value={values['postalCode'] || ''} placeholder="" />
+              <Input type="text" name="zipcode" id="zipcode" onChange={setValue} value={values['zipcode'] || ''} placeholder="" />
               <FormText color="muted">Postal / Zip Code</FormText>
             </Col>
             <Col>
