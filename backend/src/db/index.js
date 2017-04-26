@@ -23,6 +23,10 @@ export const User = sequelize.define('user', {
   country: Sequelize.STRING
 });
 
+export const PipedrivePerson = sequelize.define('pipedrive_person', {
+  personId: Sequelize.STRING
+});
+
 export const Order = sequelize.define('order', {
   orderIdentifier: {type: Sequelize.STRING(16), unique: true}
 });
@@ -31,7 +35,13 @@ export const Job = sequelize.define('job', {
   props: Sequelize.TEXT,
   quantity: Sequelize.INTEGER,
   dueDate: Sequelize.DATE,
-  pipedriveUrl: Sequelize.STRING
+  pipedriveDealId: Sequelize.STRING,
+},{
+  instanceMethods: {
+    propsParsed: function() {
+      return JSON.parse(this.props);
+    }
+  }
 });
 
 export const File = sequelize.define('file', {
@@ -39,6 +49,8 @@ export const File = sequelize.define('file', {
   path: Sequelize.STRING
 });
 
+User.hasOne(PipedrivePerson);
+PipedrivePerson.belongsTo(User);
 File.belongsTo(Job);
 Job.belongsTo(Order);
 Job.hasMany(File);
