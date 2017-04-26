@@ -1,0 +1,5 @@
+#!/usr/bin/env babel-node
+
+var db = require('../src/db');
+
+db.init()
