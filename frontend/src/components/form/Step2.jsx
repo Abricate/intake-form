@@ -136,7 +136,7 @@ const DropzoneUploader = connect(state => ({ files: state.jobRequest.files }), {
           this.setState({error: true, details: err});
         } else {
           if(res.body.files) {
-            const files = _.map(res.body.files, ({ filename }, originalName) => (
+            const files = _.map(res.body.files, (filename, originalName) => (
               { filename, originalName }
             ));
             this.props.addFilesToJobRequest(files);

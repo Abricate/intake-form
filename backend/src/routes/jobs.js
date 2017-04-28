@@ -1,7 +1,8 @@
 import _ from 'lodash';
 
-import db, { Order, File, User, PipedrivePerson, Job, createOrder } from '../db';
+import db, { Order, BoxFile, User, PipedrivePerson, Job, createOrder } from '../db';
 import pipedrive from '../clients/pipedrive';
+import box from '../clients/box';
 
 const router = require('express-promise-router')();
 
@@ -15,25 +16,21 @@ const createJob = order => async job => {
     dueDate
   });
 
-  await Promise.all(files.map(file => (
-    File.create({
-      jobId: dbJob.id,
-      provider: 'box',
-      path: file.filename
-    })
-  )));
+  const fileIdentifiers = _.map(files, 'filename');
+  const boxFiles = await BoxFile.findAll({where: {identifier: {$in: fileIdentifiers}}});
+  await dbJob.addFiles(boxFiles);
 
-  return dbJob;
+  return {job: dbJob, boxFiles};
 };
 
 const customFields = new Set([
-  'Box Folder',
+  'Files',
   'Material',
   'Tolerance',
   'Turn Around',
   'Vendor',
 ]);
-  
+
 const customFieldKeys = pipedrive.DealFields.getAll().then( fields => {
   const pairs = fields.filter( field =>
     customFields.has(field.name)
@@ -67,17 +64,18 @@ async function addDeal(_deal) {
 
 router.post('/', async function(req, res) {
   const { cart, contactInfo } = req.body;
-    
+  
   const [ user ] = await User.findOrCreate({
     where: { email: contactInfo.email },
-    defaults: { contactInfo },
+    defaults: contactInfo,
     include: [ PipedrivePerson ]
   });
 
   // order has many jobs
-  const order = await createOrder();
+  const order = await createOrder({userId: user.id});
   const jobs = await Promise.all(cart.map(createJob(order)));
-
+  await order.createContactInfo(contactInfo);
+  
   let pipedrivePerson = user.pipedrive_person;
 
   if(pipedrivePerson == null) {
@@ -91,19 +89,17 @@ router.post('/', async function(req, res) {
       userId: user.id,
       personId: response.id.toString()
     })
-}
-      
-  // move files from uploads folder to <orderIdentifier>/*
+  }
   
   // create deal(s) in pipedrive
-  await Promise.all(jobs.map( async job => {
+  await Promise.all(jobs.map( async ({job, boxFiles}) => {
     const jobProps = job.propsParsed();
     
     const deal = await addDeal({
       title: `${contactInfo.name} deal (${jobProps.dueDate ? jobProps.dueDate + ' ' : ''}${order.orderIdentifier})`,
       person_id: pipedrivePerson && parseInt(pipedrivePerson.personId),
       custom: {
-        'Box Folder': 'https://box.com/foo/bar',
+        'Files': _.map(boxFiles, 'sharedLinkUrl').join(' '),
         'Material': jobProps.material,
         'Tolerance': jobProps.tolerance
       }

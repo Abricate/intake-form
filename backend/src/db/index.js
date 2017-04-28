@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import Sequelize from 'sequelize';
+import _ from 'lodash';
 
 import { promisify } from '../util';
 
@@ -44,28 +45,49 @@ export const Job = sequelize.define('job', {
   }
 });
 
-export const File = sequelize.define('file', {
-  provider: Sequelize.STRING(16), // currently, only 'box'
-  path: Sequelize.STRING
+export const ContactInfo = sequelize.define('contact_info', {
+  email: Sequelize.STRING,
+  name: Sequelize.STRING,
+  phoneNumber: Sequelize.STRING,
+  address1: Sequelize.STRING,
+  address2: Sequelize.STRING,
+  zipcode: Sequelize.STRING,
+  country: Sequelize.STRING
+}, {tableName:  'contact_info'});
+
+export const JobFiles = sequelize.define('job_files', {
+  type: Sequelize.STRING,
+}, {indexes: [{fields: ['type']}]});
+
+export const BoxFile = sequelize.define('box_file', {
+  identifier: {type: Sequelize.STRING(16), unique: true},
+  boxId: {type: Sequelize.STRING, unique: true},
+  sharedLinkUrl: Sequelize.TEXT,
+  downloadUrl: Sequelize.TEXT  
 });
 
+Job.belongsToMany(BoxFile, { as: 'Files', through: {model: JobFiles, scope: {type: 'BoxFile'}} });
+BoxFile.belongsToMany(Job, { as: 'Jobs', through: {model: JobFiles, scope: {type: 'BoxFile'}} });
 User.hasOne(PipedrivePerson);
 PipedrivePerson.belongsTo(User);
-File.belongsTo(Job);
+BoxFile.belongsTo(Job);
 Job.belongsTo(Order);
-Job.hasMany(File);
+Job.hasMany(BoxFile);
 Order.belongsTo(User);
 Order.hasMany(Job);
 User.hasMany(Order);
+ContactInfo.belongsTo(Order);
+Order.hasOne(ContactInfo, {as: 'ContactInfo'});
 
-export async function createOrder() {
+export async function createOrder(order) {
   let tries = 100;
   
   while(tries > 0) {
     const orderIdentifier = await randomBytes(8).then(x => x.toString('hex'));
     
     const [ order, created ] = await Order.findOrCreate({
-      where: { orderIdentifier }
+      where: { orderIdentifier },
+      defaults: order
     });
 
     if(created) {
@@ -76,6 +98,28 @@ export async function createOrder() {
   }
 
   throw Error('failed to create order with unique orderIdentifier');
+}
+
+export async function createBoxFile(boxFile) {
+  console.log('createBoxFile', boxFile);
+  let tries = 100;
+  
+  while(tries > 0) {
+    const identifier = await randomBytes(8).then(x => x.toString('hex'));
+    
+    const [ result, created ] = await BoxFile.findOrCreate({
+      where: { identifier },
+      defaults: boxFile
+    });
+
+    if(created) {
+      return result;
+    }
+
+    tries -= 1;
+  }
+
+  throw Error('failed to create boxFile with unique identifier');
 }
 
 
