@@ -15,7 +15,6 @@ import '../style/style.css';
 import AbricateLogo from '../images/abricate-logo.png';
 
 import store from './store';
-import './App.css';
 
 import Step1 from './components/form/Step1';
 import Step2 from './components/form/Step2';
@@ -36,19 +35,28 @@ class App extends Component {
       <Provider store={store}>
         <Router>
           <div>
-            <Navbar color="faded" light toggleable>
-              <NavbarBrand href="/"><img src={AbricateLogo} /></NavbarBrand>
+            <Container>
+              <Navbar toggleable>
+                <NavbarBrand href="/"><img src={AbricateLogo} /></NavbarBrand>
 
-              <Collapse isOpen={true} navbar>
-                <h2 className="mr-auto">Job Request</h2>
-                <Nav navbar>
-                  <NavItem>
-                    <NavLink href="/step1">Step 1</NavLink>
-                  </NavItem>
-                </Nav>
-              </Collapse>
-            </Navbar>
-            <Container>            
+                <Collapse isOpen={true} navbar>
+                  <Nav className="ml-auto" navbar>
+                    <NavItem>
+                      <NavLink active href="/job-request">Job Request</NavLink>
+                    </NavItem>
+                    <NavItem>
+                      <NavLink href="http://abricate.com/index.html">Fabricate</NavLink>
+                    </NavItem>
+                    <NavItem>
+                      <NavLink href="http://abricate.com/team.html">Team</NavLink>
+                    </NavItem>
+                    <NavItem>
+                      <NavLink href="http://abricate.com/abricate.html">Abricate</NavLink>
+                    </NavItem>
+                  </Nav>
+                </Collapse>
+              </Navbar>
+              <h2 className="mr-auto">Job Request</h2>
               <Route exact path="/" component={Step1} />
               <Route path="/step2" component={Step2} />
               <Route path="/checkout" component={Checkout} />

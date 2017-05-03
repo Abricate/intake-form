@@ -15,10 +15,39 @@ form label {
 
 body {
   color: #41474a;
+  font-size: 14px;
+  font-family: raleway, sans-serif;
 }
 
 nav {
   margin-bottom: 1em;
+  background: #ffffff;
+}
+
+h2 {
+  color: #F79201;
+  font-size: 44px;
+}
+
+li.nav-item a {
+  height: 100px;
+  border-top: 2px solid #222629;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 2px;
+  color: #9699A6;
+  font-weight: 400;
+  min-width: 108px;
+}  
+
+li.nav-item a.active, li.nav-item a:hover {
+  border-top: 2px solid #F79201;
+  color: #F79201;
+}
+
+.navbar {
+  padding: 0;
 }
 
 ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
