@@ -1,2 +1,0 @@
-web: PATH=node_modules/.bin/:$PATH PORT=3001 babel-watch ./bin/www
-db: ./bin/postgres

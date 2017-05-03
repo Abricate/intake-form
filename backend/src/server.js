@@ -1,10 +1,8 @@
-#!/usr/bin/env node
-
 /**
  * Module dependencies.
  */
 
-var app = require('../src/app');
+var app = require('./app');
 var debug = require('debug')('intake-backend:server');
 var http = require('http');
 

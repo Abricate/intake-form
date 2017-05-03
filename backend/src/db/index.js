@@ -8,9 +8,9 @@ import config from '../config';
 
 const randomBytes = promisify(crypto.randomBytes);
 
-const { database, username, password, ...options } = config.db;
+const { uri, database, username, password, ...options } = config.db;
 
-var sequelize = new Sequelize(database, username, password, options);
+var sequelize = uri != null ? new Sequelize(uri, options) : new Sequelize(database, username, password, options);
 
 export default sequelize;
 
@@ -123,6 +123,4 @@ export async function createBoxFile(boxFile) {
 }
 
 
-export function init() {
-  return sequelize.sync();
-}
+sequelize.sync();

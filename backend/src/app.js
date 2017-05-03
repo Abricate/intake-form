@@ -11,6 +11,10 @@ var jobs = require('./routes/jobs');
 
 var app = express();
 
+
+// Priority serve any static files.
+app.use(express.static(path.resolve(__dirname, '../../frontend/build')));
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
