@@ -24,10 +24,34 @@ export function addFilesToJobRequest(files) {
   };
 }
 
+export const ADD_PENDING_FILES_TO_JOB_REQUEST = 'ADD_PENDING_FILES_TO_JOB_REQUEST';
+export function addPendingFilesToJobRequest(files) {
+  return {
+    type: ADD_PENDING_FILES_TO_JOB_REQUEST,
+    files
+  };
+}
+
+export const REMOVE_PENDING_FILES_FROM_JOB_REQUEST = 'ADD_PENDING_FILES_TO_JOB_REQUEST';
+export function removePendingFilesFromJobRequest(files) {
+  return {
+    type: REMOVE_PENDING_FILES_FROM_JOB_REQUEST,
+    files
+  };
+}
+
 export const REMOVE_FILE_FROM_JOB_REQUEST = 'REMOVE_FILE_FROM_JOB_REQUEST';
 export function removeFileFromJobRequest(file) {
   return {
     type: REMOVE_FILE_FROM_JOB_REQUEST,
+    file
+  };
+}
+
+export const MODIFY_FILE_IN_JOB_REQUEST = 'MODIFY_FILE_IN_JOB_REQUEST';
+export function modifyFileInJobRequest(file) {
+  return {
+    type: MODIFY_FILE_IN_JOB_REQUEST,
     file
   };
 }

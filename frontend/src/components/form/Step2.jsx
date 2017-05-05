@@ -17,7 +17,7 @@ import request from 'superagent';
 import _ from 'lodash';
 
 import 'react-datetime/css/react-datetime.css';
-import { FaTimesCircle } from 'react-icons/lib/fa';
+import { FaSpinner, FaTimesCircle } from 'react-icons/lib/fa';
 
 import Datetime from 'react-datetime';
 import Dropzone from 'react-dropzone';
@@ -28,6 +28,7 @@ import {
   addFilesToJobRequest,
   addToCart,
   removeFileFromJobRequest,
+  removePendingFilesFromJobRequest,
   setJobRequest,
 } from '../../actions';
 
@@ -124,13 +125,27 @@ const Tolerance = [
 ];
 
 // TODO: use and credit https://www.iconfinder.com/iconsets/document-file for icons
-const DropzoneUploader = connect(state => ({ files: state.jobRequest.files }), { addFilesToJobRequest, removeFileFromJobRequest })(React.createClass({
-  onDrop: function (acceptedFiles, rejectedFiles) {
+const style = {
+  base: { width: '100%', border: '3px dashed #666', padding: '30px', height: '200px', textAlign: 'center' },
+  active: { backgroundColor: '#e8e8e8' },
+  uploading: { backgroundColor: '#ccc' }
+};
+
+const DropzoneUploader = connect(
+  state => ({ files: state.jobRequest.files }),
+  { addFilesToJobRequest, removeFileFromJobRequest }
+)(React.createClass({
+  getInitialState() {
+    return {};
+  },
+  onDrop(acceptedFiles, rejectedFiles) {
     try {
-      const req = request.post('/uploads');
+      const req = request.post('/uploadsd');
       acceptedFiles.forEach(file => {
         req.attach('files', file);
       });
+      const pendingFiles = acceptedFiles.map(file => { originalName: file });
+      this.props.addPendingFilesToJobRequest(pendingFiles);
       req.end( (err, res) => {
         if(err) {
           this.setState({error: true, details: err});
@@ -139,6 +154,8 @@ const DropzoneUploader = connect(state => ({ files: state.jobRequest.files }), {
             const files = _.map(res.body.files, (filename, originalName) => (
               { filename, originalName }
             ));
+            
+            this.props.removePendingFilesFromJobRequest(pendingFiles);
             this.props.addFilesToJobRequest(files);
           }
         }
@@ -148,21 +165,21 @@ const DropzoneUploader = connect(state => ({ files: state.jobRequest.files }), {
     }
   },
 
-  removeFile: function(file) { return e => {
+  removeFile(file) { return e => {
     this.props.removeFileFromJobRequest(file);
     e.preventDefault();
     e.stopPropagation();
   }},
-  
-  render: function () {
+    
+  render() {
     const { files } = this.props;
 
     return (
       <div>
         <Dropzone
           disablePreview={true}
-          activeStyle={{backgroundColor: '#e8e8e8'}}
-          style={{width: '100%', border: '3px dashed #666', padding: '30px', height: '200px', textAlign: 'center'}}
+          activeStyle={style.active}
+          style={style.base}
           onDrop={this.onDrop}>
           {files.length == 0 ? (
             <div>
@@ -172,11 +189,16 @@ const DropzoneUploader = connect(state => ({ files: state.jobRequest.files }), {
             </div>
           ) : (
             files.map( (file, idx) => (
-              <div key={file.filename}>{file.originalName} <a href="#" className="text-danger" onClick={this.removeFile(file)} rel="button"><FaTimesCircle /> </a></div>
+              <div key={idx}>
+                {file.originalName}
+                <a href="#" onClick={this.removeFile(file)} rel="button">
+                  {file.uploading ? <FaSpinner className="fa-spin" /> : <FaTimesCircle color='red' />}
+                </a>
+              </div>
             ))
           )}
-        </Dropzone>
-      </div>
+      </Dropzone>
+        </div>
     );
   }
 }));
@@ -200,6 +222,7 @@ const Step2Form = ({ values, setValue, setValueRaw, addToCart, history }) => {
 
   return (
     <div>
+      <h2 className="mr-auto">Job Request</h2>
       <Form>
         <FormGroup>
           <Label for="material">Material</Label>
@@ -240,48 +263,48 @@ const Step2Form = ({ values, setValue, setValueRaw, addToCart, history }) => {
         </FormGroup>
 
         {/*
-        <FormGroup>
-          <Label>Material Special Ordered from Supplier (please check MSDS that material is safe for laser cutting)</Label>
-          <table>
+            <FormGroup>
+            <Label>Material Special Ordered from Supplier (please check MSDS that material is safe for laser cutting)</Label>
+            <table>
             <thead>
-              <tr>
-                <th>Catalog Name</th>
-                <th>Catalog Link</th>
-                <th>Product Name</th>
-                <th>Catalog Product ID Number</th>
-                <th>Dimensions</th>
-                <th>Price</th>
-                <th>Quantity</th>
-              </tr>
+            <tr>
+            <th>Catalog Name</th>
+            <th>Catalog Link</th>
+            <th>Product Name</th>
+            <th>Catalog Product ID Number</th>
+            <th>Dimensions</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>
-                  <Input type="text" name="catalogName" id="catalogName" onChange={setValue} value={values['catalogName'] || ''} />
-                </td>
-                <td>
-                  <Input type="text" name="catalogLink" id="catalogLink" onChange={setValue} value={values['catalogLink'] || ''} />
-                </td>
-                <td>
-                  <Input type="text" name="productName" id="productName" onChange={setValue} value={values['productName'] || ''} />
-                </td>
-                <td>
-                  <Input type="text" name="catalogProductId" id="catalogProductId" onChange={setValue} value={values['catalogProductId'] || ''} />
-                </td>
-                <td>
-                  <Input type="text" name="dimensions" id="dimensions" onChange={setValue} value={values['dimensions'] || ''} />
-                </td>
-                <td>
-                  <Input type="text" name="price" id="price" onChange={setValue} value={values['price'] || ''} />
-                </td>
-                <td>
-                  <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
-                </td>
-              </tr>
+            <tr>
+            <td>
+            <Input type="text" name="catalogName" id="catalogName" onChange={setValue} value={values['catalogName'] || ''} />
+            </td>
+            <td>
+            <Input type="text" name="catalogLink" id="catalogLink" onChange={setValue} value={values['catalogLink'] || ''} />
+            </td>
+            <td>
+            <Input type="text" name="productName" id="productName" onChange={setValue} value={values['productName'] || ''} />
+            </td>
+            <td>
+            <Input type="text" name="catalogProductId" id="catalogProductId" onChange={setValue} value={values['catalogProductId'] || ''} />
+            </td>
+            <td>
+            <Input type="text" name="dimensions" id="dimensions" onChange={setValue} value={values['dimensions'] || ''} />
+            </td>
+            <td>
+            <Input type="text" name="price" id="price" onChange={setValue} value={values['price'] || ''} />
+            </td>
+            <td>
+            <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
+            </td>
+            </tr>
             </tbody>
-          </table>
-        </FormGroup>
-        */}
+            </table>
+            </FormGroup>
+          */}
 
         <FormGroup>
           <Label for="tolerance">Tolerance</Label>
@@ -320,7 +343,7 @@ const Step2Form = ({ values, setValue, setValueRaw, addToCart, history }) => {
 
 function mapStateToProps(state) {
   return {
-    values: state.jobRequest
+    values: state.jobRequest.props
   };
 }
 
