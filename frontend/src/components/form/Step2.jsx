@@ -17,7 +17,7 @@ import request from 'superagent';
 import _ from 'lodash';
 
 import 'react-datetime/css/react-datetime.css';
-import { FaTimesCircle } from 'react-icons/lib/fa';
+import { FaSpinner, FaTimesCircle } from 'react-icons/lib/fa';
 
 import Datetime from 'react-datetime';
 import Dropzone from 'react-dropzone';
@@ -26,8 +26,10 @@ import ShoppingCart from './ShoppingCart';
 
 import {
   addFilesToJobRequest,
+  addPendingFilesToJobRequest,
   addToCart,
   removeFileFromJobRequest,
+  removePendingFilesFromJobRequest,
   setJobRequest,
 } from '../../actions';
 
@@ -124,59 +126,110 @@ const Tolerance = [
 ];
 
 // TODO: use and credit https://www.iconfinder.com/iconsets/document-file for icons
-const DropzoneUploader = connect(state => ({ files: state.jobRequest.files }), { addFilesToJobRequest, removeFileFromJobRequest })(React.createClass({
-  onDrop: function (acceptedFiles, rejectedFiles) {
+const style = {
+  base: { width: '100%', border: '3px dashed #666', padding: '30px', height: '200px', textAlign: 'center' },
+  active: { backgroundColor: '#e8e8e8' },
+  uploading: { backgroundColor: '#ccc' }
+};
+
+const DropzoneUploader = connect(
+  state => ({
+    files: state.jobRequest.files,
+    pendingFiles: state.jobRequest.pendingFiles
+  }),
+  {
+    addFilesToJobRequest,
+    addPendingFilesToJobRequest,
+    removeFileFromJobRequest,
+    removePendingFilesFromJobRequest,
+  }
+)(React.createClass({
+  getInitialState() {
+    return {
+      errorFiles: []
+    };
+  },
+  onDrop(acceptedFiles, rejectedFiles) {
     try {
       const req = request.post('/uploads');
       acceptedFiles.forEach(file => {
         req.attach('files', file);
       });
-      req.end( (err, res) => {
-        if(err) {
-          this.setState({error: true, details: err});
+      console.log(acceptedFiles);
+      const pendingFiles = acceptedFiles.map(file => ({ originalName: file.name }));
+      this.props.addPendingFilesToJobRequest(pendingFiles);
+      req.end( (error, res) => {
+        this.props.removePendingFilesFromJobRequest(pendingFiles);
+        if(error) {
+          this.setState( (prevState, props) => {
+            const errorFiles = pendingFiles.map( file => ({...file, error}) );
+            return { errorFiles: prevState.errorFiles.concat(errorFiles) };
+          });
         } else {
           if(res.body.files) {
             const files = _.map(res.body.files, (filename, originalName) => (
               { filename, originalName }
             ));
+            
             this.props.addFilesToJobRequest(files);
           }
         }
       });
     } catch (e) {
+      console.error(e);
       this.setState({error: true, exception: e});
     }
   },
 
-  removeFile: function(file) { return e => {
+  removeFile(file) { return e => {
     this.props.removeFileFromJobRequest(file);
     e.preventDefault();
     e.stopPropagation();
   }},
-  
-  render: function () {
-    const { files } = this.props;
+    
+  render() {
+    const { files, pendingFiles } = this.props;
+    const { errorFiles } = this.state;
 
+    const noFilesText = (
+      <div>
+        <p>Drop your file(s) here.</p>
+        <p>Allowed file extensions: dxf, dwg, svg, ai.</p>
+        <p>Max file size: 100MB.</p>
+      </div>
+    );
+
+    const allFiles = _.flatten([
+      files.map(file => ({file, uploaded: true})),
+      pendingFiles.map(file => ({file, pending: true})),
+      errorFiles.map(file => ({ file }))
+    ]);
+
+    const filenames = allFiles.map(({file, ...props}, idx) => (
+      <div key={idx}>
+        {file.originalName}
+        {props.uploaded ? <a href="#" onClick={this.removeFile(file)} rel="button"><FaTimesCircle color='red' /></a> : null}
+        {props.pending ? <FaSpinner className="icon-spin" /> : null}
+        {props.error ? <span className="alert alert-danger">{props.error.toString()}</span> : null}
+      </div>
+    ));
+          
     return (
       <div>
-        <Dropzone
-          disablePreview={true}
-          activeStyle={{backgroundColor: '#e8e8e8'}}
-          style={{width: '100%', border: '3px dashed #666', padding: '30px', height: '200px', textAlign: 'center'}}
-          onDrop={this.onDrop}>
-          {files.length == 0 ? (
-            <div>
-              <p>Drop your file(s) here.</p>
-              <p>Allowed file extensions: dxf, dwg, svg, ai.</p>
-              <p>Max file size: 100MB.</p>
-            </div>
+      <Dropzone
+        disablePreview={true}
+        activeStyle={style.active}
+        style={style.base}
+        onDrop={this.onDrop}>
+        {
+          allFiles.length == 0 ? (
+            noFilesText
           ) : (
-            files.map( (file, idx) => (
-              <div key={file.filename}>{file.originalName} <a href="#" className="text-danger" onClick={this.removeFile(file)} rel="button"><FaTimesCircle /> </a></div>
-            ))
-          )}
-        </Dropzone>
-      </div>
+            filenames
+          )
+        }
+      </Dropzone>
+        </div>
     );
   }
 }));
@@ -200,6 +253,7 @@ const Step2Form = ({ values, setValue, setValueRaw, addToCart, history }) => {
 
   return (
     <div>
+      <h2 className="mr-auto">Job Request</h2>
       <Form>
         <FormGroup>
           <Label for="material">Material</Label>
@@ -240,48 +294,48 @@ const Step2Form = ({ values, setValue, setValueRaw, addToCart, history }) => {
         </FormGroup>
 
         {/*
-        <FormGroup>
-          <Label>Material Special Ordered from Supplier (please check MSDS that material is safe for laser cutting)</Label>
-          <table>
+            <FormGroup>
+            <Label>Material Special Ordered from Supplier (please check MSDS that material is safe for laser cutting)</Label>
+            <table>
             <thead>
-              <tr>
-                <th>Catalog Name</th>
-                <th>Catalog Link</th>
-                <th>Product Name</th>
-                <th>Catalog Product ID Number</th>
-                <th>Dimensions</th>
-                <th>Price</th>
-                <th>Quantity</th>
-              </tr>
+            <tr>
+            <th>Catalog Name</th>
+            <th>Catalog Link</th>
+            <th>Product Name</th>
+            <th>Catalog Product ID Number</th>
+            <th>Dimensions</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>
-                  <Input type="text" name="catalogName" id="catalogName" onChange={setValue} value={values['catalogName'] || ''} />
-                </td>
-                <td>
-                  <Input type="text" name="catalogLink" id="catalogLink" onChange={setValue} value={values['catalogLink'] || ''} />
-                </td>
-                <td>
-                  <Input type="text" name="productName" id="productName" onChange={setValue} value={values['productName'] || ''} />
-                </td>
-                <td>
-                  <Input type="text" name="catalogProductId" id="catalogProductId" onChange={setValue} value={values['catalogProductId'] || ''} />
-                </td>
-                <td>
-                  <Input type="text" name="dimensions" id="dimensions" onChange={setValue} value={values['dimensions'] || ''} />
-                </td>
-                <td>
-                  <Input type="text" name="price" id="price" onChange={setValue} value={values['price'] || ''} />
-                </td>
-                <td>
-                  <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
-                </td>
-              </tr>
+            <tr>
+            <td>
+            <Input type="text" name="catalogName" id="catalogName" onChange={setValue} value={values['catalogName'] || ''} />
+            </td>
+            <td>
+            <Input type="text" name="catalogLink" id="catalogLink" onChange={setValue} value={values['catalogLink'] || ''} />
+            </td>
+            <td>
+            <Input type="text" name="productName" id="productName" onChange={setValue} value={values['productName'] || ''} />
+            </td>
+            <td>
+            <Input type="text" name="catalogProductId" id="catalogProductId" onChange={setValue} value={values['catalogProductId'] || ''} />
+            </td>
+            <td>
+            <Input type="text" name="dimensions" id="dimensions" onChange={setValue} value={values['dimensions'] || ''} />
+            </td>
+            <td>
+            <Input type="text" name="price" id="price" onChange={setValue} value={values['price'] || ''} />
+            </td>
+            <td>
+            <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
+            </td>
+            </tr>
             </tbody>
-          </table>
-        </FormGroup>
-        */}
+            </table>
+            </FormGroup>
+          */}
 
         <FormGroup>
           <Label for="tolerance">Tolerance</Label>
@@ -320,7 +374,7 @@ const Step2Form = ({ values, setValue, setValueRaw, addToCart, history }) => {
 
 function mapStateToProps(state) {
   return {
-    values: state.jobRequest
+    values: state.jobRequest.props
   };
 }
 

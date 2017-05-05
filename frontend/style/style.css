@@ -76,3 +76,15 @@ li.nav-item a.active, li.nav-item a:hover {
   max-width: 10rem;
 }
 
+/* http://stackoverflow.com/questions/14859322/css3-spin-animation */
+.icon-spin {
+    animation-name: spin;
+    animation-duration: 1250ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+@keyframes spin {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(360deg);}
+}

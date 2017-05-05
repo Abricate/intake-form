@@ -56,7 +56,6 @@ class App extends Component {
                   </Nav>
                 </Collapse>
               </Navbar>
-              <h2 className="mr-auto">Job Request</h2>
               <Route exact path="/" component={Step1} />
               <Route path="/step2" component={Step2} />
               <Route path="/checkout" component={Checkout} />

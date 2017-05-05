@@ -9,6 +9,7 @@ import { setContactInfo } from '../../actions';
 const Step1 = ({ values, setValue }) => {
   return (
     <div>
+      <h2 className="mr-auto">Job Request</h2>
       <Form>
         <FormGroup>
           <Label for="name">Name</Label>
