@@ -1,9 +1,11 @@
-import React, { PropTypes } from 'react'
+import React, { Component, Children } from 'react'
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux'
 import {
   Button,
   Col,
   Form,
+  FormFeedback,
   FormGroup,
   FormText,
   Input,
@@ -13,24 +15,18 @@ import {
   Row,
 } from 'reactstrap';
 import { withRouter } from 'react-router'
-import request from 'superagent';
-import _ from 'lodash';
 
 import 'react-datetime/css/react-datetime.css';
-import { FaSpinner, FaTimesCircle } from 'react-icons/lib/fa';
 
 import Datetime from 'react-datetime';
-import Dropzone from 'react-dropzone';
 
 import ShoppingCart from './ShoppingCart';
+import Uploader from './Uploader';
 
 import {
-  addFilesToJobRequest,
-  addPendingFilesToJobRequest,
   addToCart,
-  removeFileFromJobRequest,
-  removePendingFilesFromJobRequest,
   setJobRequest,
+  setJobRequestError,
 } from '../../actions';
 
 const Material = [
@@ -125,123 +121,55 @@ const Tolerance = [
   '200-100μm'
 ];
 
-// TODO: use and credit https://www.iconfinder.com/iconsets/document-file for icons
-const style = {
-  base: { width: '100%', border: '3px dashed #666', padding: '30px', height: '200px', textAlign: 'center' },
-  active: { backgroundColor: '#e8e8e8' },
-  uploading: { backgroundColor: '#ccc' }
-};
-
-const DropzoneUploader = connect(
-  state => ({
-    files: state.jobRequest.files,
-    pendingFiles: state.jobRequest.pendingFiles
-  }),
-  {
-    addFilesToJobRequest,
-    addPendingFilesToJobRequest,
-    removeFileFromJobRequest,
-    removePendingFilesFromJobRequest,
-  }
-)(React.createClass({
-  getInitialState() {
-    return {
-      errorFiles: []
-    };
-  },
-  onDrop(acceptedFiles, rejectedFiles) {
-    try {
-      const req = request.post('/uploads');
-      acceptedFiles.forEach(file => {
-        req.attach('files', file);
-      });
-      console.log(acceptedFiles);
-      const pendingFiles = acceptedFiles.map(file => ({ originalName: file.name }));
-      this.props.addPendingFilesToJobRequest(pendingFiles);
-      req.end( (error, res) => {
-        this.props.removePendingFilesFromJobRequest(pendingFiles);
-        if(error) {
-          this.setState( (prevState, props) => {
-            const errorFiles = pendingFiles.map( file => ({...file, error}) );
-            return { errorFiles: prevState.errorFiles.concat(errorFiles) };
-          });
-        } else {
-          if(res.body.files) {
-            const files = _.map(res.body.files, (filename, originalName) => (
-              { filename, originalName }
-            ));
-            
-            this.props.addFilesToJobRequest(files);
-          }
-        }
-      });
-    } catch (e) {
-      console.error(e);
-      this.setState({error: true, exception: e});
-    }
-  },
-
-  removeFile(file) { return e => {
-    this.props.removeFileFromJobRequest(file);
-    e.preventDefault();
-    e.stopPropagation();
-  }},
-    
-  render() {
-    const { files, pendingFiles } = this.props;
-    const { errorFiles } = this.state;
-
-    const noFilesText = (
-      <div>
-        <p>Drop your file(s) here.</p>
-        <p>Allowed file extensions: dxf, dwg, svg, ai.</p>
-        <p>Max file size: 100MB.</p>
-      </div>
-    );
-
-    const allFiles = _.flatten([
-      files.map(file => ({file, uploaded: true})),
-      pendingFiles.map(file => ({file, pending: true})),
-      errorFiles.map(file => ({ file }))
-    ]);
-
-    const filenames = allFiles.map(({file, ...props}, idx) => (
-      <div key={idx}>
-        {file.originalName}
-        {props.uploaded ? <a href="#" onClick={this.removeFile(file)} rel="button"><FaTimesCircle color='red' /></a> : null}
-        {props.pending ? <FaSpinner className="icon-spin" /> : null}
-        {props.error ? <span className="alert alert-danger">{props.error.toString()}</span> : null}
-      </div>
-    ));
-          
-    return (
-      <div>
-      <Dropzone
-        disablePreview={true}
-        activeStyle={style.active}
-        style={style.base}
-        onDrop={this.onDrop}>
-        {
-          allFiles.length == 0 ? (
-            noFilesText
-          ) : (
-            filenames
-          )
-        }
-      </Dropzone>
-        </div>
-    );
-  }
-}));
-
-
 function mkOptions(items) {
   return ['', ...items].map(item => (
     <option key={item}>{item}</option>
   ));
 }
 
-const Step2Form = ({ values, setValue, setValueRaw, addToCart, history }) => {
+class FormItems extends React.Component {
+  getChildContext() {
+    return {
+      values: this.props.values,
+      validationErrors: this.props.validationErrors,
+      setValue: this.props.setValue,
+    };
+  }
+
+  render() {
+    return (
+      <div>
+        {this.props.children}
+      </div>
+    );
+  }
+}
+
+FormItems.childContextTypes = {
+  values: PropTypes.object.isRequired,
+  validationErrors: PropTypes.object.isRequired,
+  setValue: PropTypes.func
+}
+
+const FormItem = ({ children, label, name, type, options }, { values, validationErrors, setValue }) => {
+  return (<FormGroup color={validationErrors[name] ? "danger" : null}>
+    <Label for={name} className="form-control-label">{label}</Label>
+    <Input type={type} name={name} id={name} state={validationErrors[name] ? 'danger' : null} onChange={setValue} value={values[name] || ''}>
+      {options !== undefined ? mkOptions(options) : null}
+    </Input>
+    {children}
+  </FormGroup>);
+};
+
+FormItem.contextTypes = {
+  values: PropTypes.object.isRequired,
+  validationErrors: PropTypes.object.isRequired,
+  setValue: PropTypes.func
+};  
+
+const Step2Form = ({ jobRequest, setValue, setValueRaw, addToCart, history }) => {
+  const values = jobRequest.props;
+  
   const decr = field => () => {
     const value = parseInt(values['quantity']) - 1;
     setValueRaw('quantity', value < 1 ? 1 : value)
@@ -255,126 +183,65 @@ const Step2Form = ({ values, setValue, setValueRaw, addToCart, history }) => {
     <div>
       <h2 className="mr-auto">Job Request</h2>
       <Form>
-        <FormGroup>
-          <Label for="material">Material</Label>
-          <Input type="select" name="material" id="material" onChange={setValue} value={values['material'] || ''}>
-            {mkOptions(Material)}
-          </Input>          
-          <FormText color="muted">Please choose a material.</FormText>
-        </FormGroup>
-        <FormGroup>
-          <Label for="materialThickness">Material Thickness</Label>
-          <Input type="select" name="materialThickness" id="materialThickness" onChange={setValue} value={values['materialThickness'] || ''}>
-            {mkOptions(MaterialThickness)}
-          </Input>
-        </FormGroup>
-        <FormGroup>
-          <Label for="sheetMetalGage">Sheet Metal Gage</Label>
-          <Input type="select" name="sheetMetalGage" id="sheetMetalGage" onChange={setValue} value={values['sheetMetalGage'] || ''}>
-            {mkOptions(SheetMetalGage)}
-          </Input>
-        </FormGroup>
-        <FormGroup>
-          <Label for="area">Area (Length and Width)</Label>
-          <Input type="select" name="area" id="area" onChange={setValue} value={values['area'] || ''}>
-            {mkOptions(Area)}
-          </Input>
-        </FormGroup>
-        <FormGroup>
-          <Label for="color">Color</Label>
-          <Input type="select" name="color" id="color" onChange={setValue} value={values['color'] || ''}>
-            {mkOptions(Color)}
-          </Input>
-        </FormGroup>
-
-        <FormGroup>
-          <Label for="">Upload Your File(s)</Label>
-          <DropzoneUploader />
-          <FormText color="muted">Please check your file before uploading. Use mm scale. All art work in the .dxf file will be quoted and cut. Remove all art/lines you don't want to cut including: dimensions, annotations, boarders, and hashes in the middle of circles. Check that all cutting lines are in one layer and all etching artwork is in a separate layer.</FormText>
-        </FormGroup>
-
-        {/*
-            <FormGroup>
-            <Label>Material Special Ordered from Supplier (please check MSDS that material is safe for laser cutting)</Label>
-            <table>
-            <thead>
-            <tr>
-            <th>Catalog Name</th>
-            <th>Catalog Link</th>
-            <th>Product Name</th>
-            <th>Catalog Product ID Number</th>
-            <th>Dimensions</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-            <td>
-            <Input type="text" name="catalogName" id="catalogName" onChange={setValue} value={values['catalogName'] || ''} />
-            </td>
-            <td>
-            <Input type="text" name="catalogLink" id="catalogLink" onChange={setValue} value={values['catalogLink'] || ''} />
-            </td>
-            <td>
-            <Input type="text" name="productName" id="productName" onChange={setValue} value={values['productName'] || ''} />
-            </td>
-            <td>
-            <Input type="text" name="catalogProductId" id="catalogProductId" onChange={setValue} value={values['catalogProductId'] || ''} />
-            </td>
-            <td>
-            <Input type="text" name="dimensions" id="dimensions" onChange={setValue} value={values['dimensions'] || ''} />
-            </td>
-            <td>
-            <Input type="text" name="price" id="price" onChange={setValue} value={values['price'] || ''} />
-            </td>
-            <td>
-            <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
-            </td>
-            </tr>
-            </tbody>
-            </table>
-            </FormGroup>
-          */}
-
-        <FormGroup>
-          <Label for="tolerance">Tolerance</Label>
-          <Input type="select" name="tolerance" id="tolerance" onChange={setValue} value={values['tolerance'] || ''}>
-            {mkOptions(Tolerance)}
-          </Input>
-        </FormGroup>
-
-        <FormGroup>
-          <Label for="comments">Job comments</Label>
-          <Input type="textarea" name="comments" id="comments" />
-          <FormText color="muted">Please include any special treatments or special notes about materials.</FormText>
-        </FormGroup>
-
-        <FormGroup>
-          <Label for="quantity">Quantity / How many do you need?</Label>
-
-          <InputGroup className="small">
-            <InputGroupAddon className="clickable" onClick={decr('quantity')}>-</InputGroupAddon>
-            <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
-            <InputGroupAddon className="clickable" onClick={incr('quantity')}>+</InputGroupAddon>
-          </InputGroup>
-        </FormGroup>
-
-        <FormGroup>
-          <Label for="quantity">What date do you need your parts back by?</Label>
-          <Datetime onChange={moment => setValueRaw('dueDate', moment.format('YYYY-MM-DD'))} name="dueDate" value={values['dueDate'] || ''} timeFormat={false} />
-        </FormGroup>
-
+        <FormItems values={values} validationErrors={jobRequest.validationErrors} setValue={setValue}>
+          <FormItem label="Material" name="material" type="select" options={Material}>
+            <FormText color="muted">Please choose a material.</FormText>
+          </FormItem>
         
-        <Button onClick={() => { addToCart(values); history.push('#order-summary'); }} className="w-100" color="primary">Add to Cart</Button>
+          <FormItem label="Material Thickness" name="materialThickness" type="select" options={MaterialThickness} />
+          <FormItem label="Sheet Metal Gage" name="sheetMetalGage" type="select" options={SheetMetalGage} />
+          <FormItem label="Area (Length and Width)" name="area" type="select" options={Area} />
+          <FormItem label="Color" name="color" type="select" options={Color} />
+
+          <FormGroup>
+            <Label for="">Upload Your File(s)</Label>
+            <Uploader endpoint="/uploads" />
+            <FormText color="muted">Please check your file before uploading. Use mm scale. All art work in the .dxf file will be quoted and cut. Remove all art/lines you don't want to cut including: dimensions, annotations, boarders, and hashes in the middle of circles. Check that all cutting lines are in one layer and all etching artwork is in a separate layer.</FormText>
+          </FormGroup>
+
+
+          <FormItem label="Tolerance" name="tolerance" type="select" options={Tolerance} />
+
+
+          <FormItem label="Job comments" name="comments" type="textarea">
+            <FormText color="muted">Please include any special treatments or special notes about materials.</FormText>
+          </FormItem>
+    
+          <FormGroup>
+            <Label for="quantity">Quantity / How many do you need?</Label>
+
+            <InputGroup className="small">
+              <InputGroupAddon className="clickable" onClick={decr('quantity')}>-</InputGroupAddon>
+              <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
+              <InputGroupAddon className="clickable" onClick={incr('quantity')}>+</InputGroupAddon>
+            </InputGroup>
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="quantity">What date do you need your parts back by?</Label>
+            <Datetime onChange={moment => setValueRaw('dueDate', moment.format('YYYY-MM-DD'))} name="dueDate" value={values['dueDate'] || ''} timeFormat={false} />
+          </FormGroup>
+
+          <Button onClick={() => { addToCart(jobRequest); history.push('#order-summary'); }} className="w-100" color="primary">Add to Cart</Button>
+        </FormItems>
       </Form>
     </div>
   );
 };
 
+function validate(jobRequest) {
+  return [{ field: 'comments', error: "fpp bar baz" }];
+}
+
+function validateAndDispatch(jobRequest, dispatch) {
+  const errors = validate(jobRequest);
+  errors.forEach( error => dispatch(setJobRequestError(error)) );
+  return errors;
+}
+
 function mapStateToProps(state) {
   return {
-    values: state.jobRequest.props
+    jobRequest: state.jobRequest
   };
 }
 
@@ -382,7 +249,12 @@ function mapDispatchToProps(dispatch) {
   return {
     setValue: event => dispatch(setJobRequest({field: event.target.name, value: event.target.value})),
     setValueRaw: (field, value) => dispatch(setJobRequest({field, value})),
-    addToCart: jobRequest => dispatch(addToCart(jobRequest))
+    addToCart: jobRequest => {
+      const errors = validateAndDispatch(jobRequest, dispatch);
+      if(errors.length == 0) {
+        dispatch(addToCart(jobRequest))
+      }
+    }
   };
 }
 

@@ -16,27 +16,26 @@ export function setJobRequest({ field, value }) {
   };
 }
 
-export const ADD_FILES_TO_JOB_REQUEST = 'ADD_FILES_TO_JOB_REQUEST';
-export function addFilesToJobRequest(files) {
+export const SET_JOB_REQUEST_FILE_UPLOAD_PENDING = 'SET_JOB_REQUEST_FILE_UPLOAD_PENDING';
+export function setJobRequestFileUploadPending() {
   return {
-    type: ADD_FILES_TO_JOB_REQUEST,
-    files
+    type: SET_JOB_REQUEST_FILE_UPLOAD_PENDING
   };
 }
 
-export const ADD_PENDING_FILES_TO_JOB_REQUEST = 'ADD_PENDING_FILES_TO_JOB_REQUEST';
-export function addPendingFilesToJobRequest(files) {
+export const CLEAR_JOB_REQUEST_FILE_UPLOAD_PENDING = 'CLEAR_JOB_REQUEST_FILE_UPLOAD_PENDING';
+export function clearJobRequestFileUploadPending() {
   return {
-    type: ADD_PENDING_FILES_TO_JOB_REQUEST,
-    files
+    type: CLEAR_JOB_REQUEST_FILE_UPLOAD_PENDING
   };
 }
 
-export const REMOVE_PENDING_FILES_FROM_JOB_REQUEST = 'REMOVE_PENDING_FILES_FROM_JOB_REQUEST';
-export function removePendingFilesFromJobRequest(files) {
+export const SET_JOB_REQUEST_ERROR = 'SET_JOB_REQUEST_ERROR';
+export function setJobRequestError({ field, error }) {
   return {
-    type: REMOVE_PENDING_FILES_FROM_JOB_REQUEST,
-    files
+    type: SET_JOB_REQUEST_ERROR,
+    field,
+    error
   };
 }
 
@@ -48,11 +47,11 @@ export function removeFileFromJobRequest(file) {
   };
 }
 
-export const MODIFY_FILE_IN_JOB_REQUEST = 'MODIFY_FILE_IN_JOB_REQUEST';
-export function modifyFileInJobRequest(file) {
+export const ADD_FILES_TO_JOB_REQUEST = 'ADD_FILES_TO_JOB_REQUEST';
+export function addFilesToJobRequest(files) {
   return {
-    type: MODIFY_FILE_IN_JOB_REQUEST,
-    file
+    type: ADD_FILES_TO_JOB_REQUEST,
+    files
   };
 }
 

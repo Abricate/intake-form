@@ -56,6 +56,12 @@ class App extends Component {
                   </Nav>
                 </Collapse>
               </Navbar>
+            </Container>
+            <Container fluid>
+              <div className="breadcrumb-bar">
+              </div>
+            </Container>
+            <Container>
               <Route exact path="/" component={Step1} />
               <Route path="/step2" component={Step2} />
               <Route path="/checkout" component={Checkout} />

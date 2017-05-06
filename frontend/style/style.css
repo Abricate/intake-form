@@ -76,6 +76,13 @@ li.nav-item a.active, li.nav-item a:hover {
   max-width: 10rem;
 }
 
+.breadcrumb-bar {
+  height: 68px;
+  background-color: #25292C;
+  margin: 0 -15px;
+  margin-bottom: 2rem;
+}
+
 /* http://stackoverflow.com/questions/14859322/css3-spin-animation */
 .icon-spin {
     animation-name: spin;
