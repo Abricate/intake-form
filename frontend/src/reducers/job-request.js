@@ -10,7 +10,7 @@ import {
   JOB_REQUEST_SUBMITTED
 } from '../actions';
 
-const Testing = true;
+const Testing = process.env.NODE_ENV === 'development';
 
 const EmptyJobRequest = {
   quantity: 1,

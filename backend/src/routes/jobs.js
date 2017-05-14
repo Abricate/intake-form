@@ -7,7 +7,7 @@ import box from '../clients/box';
 const router = require('express-promise-router')();
 
 const createJob = order => async job => {
-  const { quantity, dueDate, files, ...props } = job;
+  const { quantity, dueDate, files, props } = job;
 
   const dbJob = await Job.create({
     orderId: order.id,
@@ -94,7 +94,7 @@ router.post('/', async function(req, res) {
   // create deal(s) in pipedrive
   await Promise.all(jobs.map( async ({job, boxFiles}) => {
     const jobProps = job.propsParsed();
-    
+
     const deal = await addDeal({
       title: `${contactInfo.name} deal (${jobProps.dueDate ? jobProps.dueDate + ' ' : ''}${order.orderIdentifier})`,
       person_id: pipedrivePerson && parseInt(pipedrivePerson.personId),

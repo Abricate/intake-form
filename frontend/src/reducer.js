@@ -18,7 +18,7 @@ const defaultContactInfoForTesting = {
   country: 'United States'
 }
 
-function contactInfo(state = {country: 'United States', /* ...defaultContactInfoForTesting */}, action) {
+function contactInfo(state = {country: 'United States', /*...defaultContactInfoForTesting*/}, action) {
   switch(action.type) {
     case SET_CONTACT_INFO:
       return {...state, [action.field]: action.value};
@@ -43,7 +43,7 @@ const defaultCartForTesting = [{
   validationErrors: {}
 }];
 
-function cart(state = defaultCartForTesting, action) {
+function cart(state = [] /*defaultCartForTesting*/, action) {
   switch(action.type) {
     case ADD_TO_CART:
       return [...state, action.jobRequest];
