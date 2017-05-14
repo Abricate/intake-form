@@ -84,7 +84,7 @@ router.post('/', async function(req, res) {
       email: contactInfo.email,
       phone: contactInfo.phoneNumber
     });
-
+    
     pipedrivePerson = await PipedrivePerson.create({
       userId: user.id,
       personId: response.id.toString()

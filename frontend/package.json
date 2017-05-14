@@ -8,6 +8,7 @@
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
     "prop-types": "^15.5.8",
+    "query-string": "^4.3.4",
     "react": "^15.5.4",
     "react-addons-css-transition-group": "^15.5.2",
     "react-addons-transition-group": "^15.5.2",
@@ -21,6 +22,7 @@
     "react-transition-group": "^1.1.1",
     "reactstrap": "^4.5.0",
     "redux": "^3.6.0",
+    "scroll-to-element": "^2.0.0",
     "superagent": "^3.5.2"
   },
   "devDependencies": {

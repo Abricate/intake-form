@@ -8,6 +8,26 @@
   background-color: rgb(255, 189, 94);
 }
 
+a.btn-primary {
+  color: #fff;
+}
+
+.btn-secondary {
+  background-color: #8e7850;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background-color: #b59c6d;
+  color: #fff;
+}
+
+a.btn-secondary {
+  color: #fff;
+}
+
 form label {
   font-weight: 600;
   margin-bottom: 0.25rem;
@@ -27,6 +47,10 @@ nav {
 h2 {
   color: #F79201;
   font-size: 44px;
+}
+
+h1, h2, h3 {
+  margin-bottom: 1rem;
 }
 
 li.nav-item a {
@@ -76,6 +100,13 @@ li.nav-item a.active, li.nav-item a:hover {
   max-width: 10rem;
 }
 
+.file-uploader {
+  width: 100%;
+  border: 3px dashed #666;
+  height: 200px;
+  text-align: center;
+}
+
 .breadcrumb-bar {
   height: 68px;
   background-color: #25292C;
@@ -94,4 +125,23 @@ li.nav-item a.active, li.nav-item a:hover {
 @keyframes spin {
     from {transform:rotate(0deg);}
     to {transform:rotate(360deg);}
+}
+
+ul.order-summary {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+ul.order-summary > li > .key {
+  text-transform: capitalize;
+  font-weight: bold;
+}
+
+.shopping-cart-sidebar ul.order-summary {
+  flex-direction: column;
 }

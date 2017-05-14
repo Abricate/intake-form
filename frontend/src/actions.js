@@ -16,6 +16,13 @@ export function setJobRequest({ field, value }) {
   };
 }
 
+export const JOB_REQUEST_SUBMITTED = 'JOB_REQUEST_SUBMITTED';
+export function jobRequestSubmitted() {
+  return {
+    type: JOB_REQUEST_SUBMITTED
+  };
+}
+
 export const SET_JOB_REQUEST_FILE_UPLOAD_PENDING = 'SET_JOB_REQUEST_FILE_UPLOAD_PENDING';
 export function setJobRequestFileUploadPending() {
   return {
@@ -27,15 +34,6 @@ export const CLEAR_JOB_REQUEST_FILE_UPLOAD_PENDING = 'CLEAR_JOB_REQUEST_FILE_UPL
 export function clearJobRequestFileUploadPending() {
   return {
     type: CLEAR_JOB_REQUEST_FILE_UPLOAD_PENDING
-  };
-}
-
-export const SET_JOB_REQUEST_ERROR = 'SET_JOB_REQUEST_ERROR';
-export function setJobRequestError({ field, error }) {
-  return {
-    type: SET_JOB_REQUEST_ERROR,
-    field,
-    error
   };
 }
 

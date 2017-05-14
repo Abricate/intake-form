@@ -24,7 +24,7 @@ const config = {
       dialect: 'postgres',
     },
     pipedrive: {
-      token: 'a4e2a12063820ab1b87994a3c0dbe4f957cb16e7' // <-- sandbox key. production key: 'aafe2fba2dcd9f80f686c7dc28f14b9b70f65698'
+      token: 'b8560bf3dc15905f41f65650604cddc2f11038c0' // <-- sandbox key. production key: 'aafe2fba2dcd9f80f686c7dc28f14b9b70f65698'
     }
   },
   production: {
@@ -32,7 +32,7 @@ const config = {
       uri: process.env.DATABASE_URL
     },
     pipedrive: {
-      token: 'a4e2a12063820ab1b87994a3c0dbe4f957cb16e7' // <-- sandbox key. production key: 'aafe2fba2dcd9f80f686c7dc28f14b9b70f65698'
+      token: 'a4e2a12063820ab1b87994a3c0dbe4f957cb16e7'
     }
   }
 }

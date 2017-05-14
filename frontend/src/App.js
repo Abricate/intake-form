@@ -3,10 +3,8 @@ import {
   BrowserRouter as Router,
   Route,
   Link
-} from 'react-router-dom'
-
-
-import { Provider } from 'react-redux'
+} from 'react-router-dom';
+import { Provider } from 'react-redux';
 import { Container, Collapse, Navbar, NavbarBrand, Nav, NavItem, NavLink } from 'reactstrap';
 
 import 'bootstrap/dist/css/bootstrap.css';

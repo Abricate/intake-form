@@ -6,6 +6,7 @@ import jobRequest from './reducers/job-request';
 import {
   ADD_TO_CART,
   SET_CONTACT_INFO,
+  JOB_REQUEST_SUBMITTED
 } from './actions';
 
 const defaultContactInfoForTesting = {
@@ -17,8 +18,7 @@ const defaultContactInfoForTesting = {
   country: 'United States'
 }
 
-
-function contactInfo(state = {country: 'United States', ...defaultContactInfoForTesting}, action) {
+function contactInfo(state = {country: 'United States', /* ...defaultContactInfoForTesting */}, action) {
   switch(action.type) {
     case SET_CONTACT_INFO:
       return {...state, [action.field]: action.value};
@@ -27,10 +27,28 @@ function contactInfo(state = {country: 'United States', ...defaultContactInfoFor
   }
 }
 
-function cart(state = [], action) {
+const defaultCartForTesting = [{
+  files: [
+    {
+      filename: 'test',
+      originalName: 'foo'
+    }
+  ],
+  props: {
+    quantity: 1,
+    material: 'Delrin',
+    materialThickness: '1/4"',
+    sheetMetalGage: '28'
+  },
+  validationErrors: {}
+}];
+
+function cart(state = defaultCartForTesting, action) {
   switch(action.type) {
     case ADD_TO_CART:
       return [...state, action.jobRequest];
+    case JOB_REQUEST_SUBMITTED:
+      return [];
     default:
       return state;
   }

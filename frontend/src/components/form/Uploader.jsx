@@ -12,9 +12,8 @@ import {
 
 // TODO: use and credit https://www.iconfinder.com/iconsets/document-file for icons
 const style = {
-  base: { width: '100%', border: '3px dashed #666', padding: '30px', height: '200px', textAlign: 'center' },
-  active: { backgroundColor: '#e8e8e8' },
-  uploading: { backgroundColor: '#ccc' }
+  base: { padding: '30px', width: '100%', height: '100%'},
+  active: { backgroundColor: '#e8e8e8' }
 };
 
 class Uploader extends React.Component {
@@ -120,21 +119,20 @@ class Uploader extends React.Component {
     ));
     
     return (
-      <div>
-        <Dropzone
-            disablePreview={true}
-            activeStyle={style.active}
-            style={style.base}
-            onDrop={this.onDrop}>
-          {
-            allFiles.length == 0 ? (
-              noFilesText
-            ) : (
-              <div>{uploadedFiles}{pendingFiles}</div>
-            )
-          }
-        </Dropzone>
-      </div>
+      <Dropzone
+          className="d-flex align-items-center justify-content-center"
+          disablePreview={true}
+          activeStyle={style.active}
+          style={style.base}
+          onDrop={this.onDrop}>
+        {
+          allFiles.length == 0 ? (
+            noFilesText
+          ) : (
+            <div>{uploadedFiles}{pendingFiles}</div>
+          )
+        }
+      </Dropzone>
     );
   }
 }

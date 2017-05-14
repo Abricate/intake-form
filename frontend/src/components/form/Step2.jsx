@@ -1,4 +1,5 @@
-import React, { Component, Children } from 'react'
+import React from 'react'
+import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux'
 import {
@@ -15,6 +16,7 @@ import {
   Row,
 } from 'reactstrap';
 import { withRouter } from 'react-router'
+import _ from 'lodash';
 
 import 'react-datetime/css/react-datetime.css';
 
@@ -22,6 +24,9 @@ import Datetime from 'react-datetime';
 
 import ShoppingCart from './ShoppingCart';
 import Uploader from './Uploader';
+import { FormItem, FormItems } from './FormItems';
+
+import { scrollToFirstFormElementWithError } from './util';
 
 import {
   addToCart,
@@ -29,230 +34,170 @@ import {
   setJobRequestError,
 } from '../../actions';
 
-const Material = [
-  'Acrylic',
-  'Delrin',
-  'Coroplast',
-  'Polycarbonate',
-  'Abs',
-  'Silicon rubber',
-  'Mylar',
-  'Birch Plywood',
-  'Walnut Plywood',
-  'Bamboo Ply',
-  'Aluminum 5052',
-  'Aluminum 6061',
-  'Aluminum 6063',
-  'Aluminum 7075',
-  'Cold rolled Steel 1083',
-  'Hot rolled Steel',
-  'Stainless Steel 304',
-  'Fabric',
-  'Silk',
-  'Cotton',
-  'Felt',
-  'Ripstop nylon',
-  'Leather',
-  'Fiber glass',
-  'Carbon fiber',
-  'Paper',
-  'Cardboard',
-  'Pressboard',
-  'Melamine',
-  'Cork',
-  'Corian',
-  'MDF',
-  'Depron Foam',
-  'Magnetic sheet',
-  'Teflon',
-  'Special Order from Supplier Catalog',
-  'Multiple material customer specified.'
-];
+import * as MaterialsConfig from '../../data/materials';
 
-const MaterialThickness = [
-  '1/16"',
-  '1/8"',
-  '3/16"',
-  '1/4"',
-  '3/8"',
-  '1/2"'
-];
+const MaterialCategories = _.map(MaterialsConfig.Materials, 'label');
 
-const SheetMetalGage = [
-  '30',
-  '28',
-  '26',
-  '24',
-  '22',
-  '20',
-  '18',
-  '16',
-  '14',
-  '12',
-  '10'
-];
+function validate(jobRequest) {
+  const selectedMaterialCategory = MaterialsConfig.MaterialsByLabel[jobRequest['_materialCategory']];
+  const requiredFields = [
+    '_materialCategory',
+    'quantity',
+    'dueDate',
+    'material'
+  ];
 
-const Area = [
-  '1ft x 1 ft',
-  '1ft x 2ft',
-  '2ft x 2ft',
-  '2ft x 4ft',
-  '4ft x 4ft',
-  '4ft x 8ft',
-  'Other'
-];
+  const missingProps = requiredFields.map( field => 
+    !jobRequest.props[field] ? { field, error: `${field} is required` } : null
+  ).filter( x => x != null);
 
-const Color = [
-  'Clear',
-  'Black',
-  'White',
-  'Red',
-  'Yellow',
-  'Orange',
-  'Green',
-  'Blue'
-];
+  const missingFiles = (jobRequest.files.length === 0) ? [{ field: 'files', error: 'Please upload your part file'}] : [];
 
-const Tolerance = [
-  '2-6mm',
-  '1-2mm',
-  '1mm-500μm',
-  '500μm-200μm',
-  '200-100μm'
-];
-
-function mkOptions(items) {
-  return ['', ...items].map(item => (
-    <option key={item}>{item}</option>
-  ));
+  return _.flatten([
+    missingProps,
+    missingFiles
+  ]);
 }
 
-class FormItems extends React.Component {
-  getChildContext() {
-    return {
-      values: this.props.values,
-      validationErrors: this.props.validationErrors,
-      setValue: this.props.setValue,
+class Step2Form extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showErrors: false
     };
+    this.handleAddToCart = this.handleAddToCart.bind(this);
   }
 
+  handleAddToCart() {
+    const { addToCart, errors, jobRequest } = this.props;
+
+    if(!_.isEmpty(errors)) {
+      scrollToFirstFormElementWithError(errors);
+    }
+    
+    this.setState({showErrors: true});
+    addToCart(jobRequest);
+  }
+  
   render() {
+    const { jobRequest, setValue, setValueRaw, addToCart, history, errors } = this.props;
+    console.log(errors);
+    const decr = field => () => {
+      const value = parseInt(values[field]) - 1;
+      setValueRaw(field, value < 1 ? 1 : value)
+    };
+
+    const incr = field => () => {
+      setValueRaw(field, parseInt(values[field]) + 1)
+    };
+
+    const values = jobRequest.props;
+    
+    const dueDateChanged = moment => {
+      let dueDate = moment;
+      if(moment.format != undefined) {
+        dueDate = dueDate.format('YYYY-MM-DD');
+      }
+      setValueRaw('dueDate', dueDate);
+    };
+
+    const selectedMaterialCategory = MaterialsConfig.MaterialsByLabel[values['_materialCategory']];
+    const validationErrors = this.state.showErrors ? errors : {};
+    
     return (
       <div>
-        {this.props.children}
+        <h2 className="mr-auto">Job Request</h2>
+        <Form>
+          <FormItems values={values} validationErrors={validationErrors} setValue={setValue}>
+            <FormItem label="Material Category" name="_materialCategory" type="select" options={MaterialCategories}>
+              <FormText color="muted">Please choose a material category.</FormText>
+            </FormItem>
+            {selectedMaterialCategory ? (
+              <div>
+                <FormItem label="Material" name="material" type="select" options={selectedMaterialCategory.types}>
+                  <FormText color="muted">Please choose a material.</FormText>
+                </FormItem>
+
+                <FormItem label="Material Thickness" name="materialThickness" type="select" options={selectedMaterialCategory.thicknesses} />
+                <FormItem label="Area (Length and Width)" name="area" type="select" options={MaterialsConfig.Area} />
+                {selectedMaterialCategory.colors ? (
+                  <FormItem label="Color" name="color" type="select" options={selectedMaterialCategory.colors} />
+                ) : null}
+
+                <FormGroup color={validationErrors['files'] ? 'danger' : null}>
+                  <Label className="form-control-label">Upload Your File(s)</Label>
+                  <div id="files" style={{padding: 0}}className="form-control file-uploader">
+                    <Uploader endpoint="/uploads" />
+                  </div>
+                  {validationErrors['files'] && validationErrors['files'] !== true ? <FormFeedback>{validationErrors['files']}</FormFeedback> : null}
+                  <FormText color="muted">Please check your file before uploading. Use mm scale. All art work in the .dxf file will be quoted and cut. Remove all art/lines you don't want to cut including: dimensions, annotations, boarders, and hashes in the middle of circles. Check that all cutting lines are in one layer and all etching artwork is in a separate layer.</FormText>
+                </FormGroup>
+
+                <FormItem label="Tolerance" name="tolerance" type="select" options={MaterialsConfig.Tolerance} />
+
+                <FormItem label="Job comments" name="comments" type="textarea">
+                  <FormText color="muted">Please include any special treatments or special notes about materials.</FormText>
+                </FormItem>
+                
+                <FormGroup>
+                  <Label for="quantity">Quantity / How many do you need?</Label>
+
+                  <InputGroup className="small">
+                    <InputGroupAddon className="clickable" onClick={decr('quantity')}>-</InputGroupAddon>
+                    <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
+                    <InputGroupAddon className="clickable" onClick={incr('quantity')}>+</InputGroupAddon>
+                  </InputGroup>
+                </FormGroup>
+
+                <FormGroup>
+                  <Label for="quantity">What date do you need your parts back by?</Label>
+                  <Datetime onChange={dueDateChanged} name="dueDate" value={values['dueDate'] || ''} timeFormat={false} />
+                </FormGroup>
+
+                <Row>
+                  <Col>
+                    <Link to="/" className="btn btn-secondary w-100" color="secondary">&laquo; Edit Contact Info</Link>
+                  </Col>
+                  <Col>
+                    <Button onClick={this.handleAddToCart} className="w-100" color="primary">Add to Cart &raquo;</Button>
+                  </Col>
+                </Row>
+              </div>
+            ) : null}
+          </FormItems>
+        </Form>
       </div>
     );
   }
 }
 
-FormItems.childContextTypes = {
-  values: PropTypes.object.isRequired,
-  validationErrors: PropTypes.object.isRequired,
-  setValue: PropTypes.func
-}
-
-const FormItem = ({ children, label, name, type, options }, { values, validationErrors, setValue }) => {
-  return (<FormGroup color={validationErrors[name] ? "danger" : null}>
-    <Label for={name} className="form-control-label">{label}</Label>
-    <Input type={type} name={name} id={name} state={validationErrors[name] ? 'danger' : null} onChange={setValue} value={values[name] || ''}>
-      {options !== undefined ? mkOptions(options) : null}
-    </Input>
-    {children}
-  </FormGroup>);
-};
-
-FormItem.contextTypes = {
-  values: PropTypes.object.isRequired,
-  validationErrors: PropTypes.object.isRequired,
-  setValue: PropTypes.func
-};  
-
-const Step2Form = ({ jobRequest, setValue, setValueRaw, addToCart, history }) => {
-  const values = jobRequest.props;
-  
-  const decr = field => () => {
-    const value = parseInt(values['quantity']) - 1;
-    setValueRaw('quantity', value < 1 ? 1 : value)
-  };
-
-  const incr = field => () => {
-    setValueRaw('quantity', parseInt(values['quantity']) + 1)
-  };
-
-  return (
-    <div>
-      <h2 className="mr-auto">Job Request</h2>
-      <Form>
-        <FormItems values={values} validationErrors={jobRequest.validationErrors} setValue={setValue}>
-          <FormItem label="Material" name="material" type="select" options={Material}>
-            <FormText color="muted">Please choose a material.</FormText>
-          </FormItem>
-        
-          <FormItem label="Material Thickness" name="materialThickness" type="select" options={MaterialThickness} />
-          <FormItem label="Sheet Metal Gage" name="sheetMetalGage" type="select" options={SheetMetalGage} />
-          <FormItem label="Area (Length and Width)" name="area" type="select" options={Area} />
-          <FormItem label="Color" name="color" type="select" options={Color} />
-
-          <FormGroup>
-            <Label for="">Upload Your File(s)</Label>
-            <Uploader endpoint="/uploads" />
-            <FormText color="muted">Please check your file before uploading. Use mm scale. All art work in the .dxf file will be quoted and cut. Remove all art/lines you don't want to cut including: dimensions, annotations, boarders, and hashes in the middle of circles. Check that all cutting lines are in one layer and all etching artwork is in a separate layer.</FormText>
-          </FormGroup>
-
-
-          <FormItem label="Tolerance" name="tolerance" type="select" options={Tolerance} />
-
-
-          <FormItem label="Job comments" name="comments" type="textarea">
-            <FormText color="muted">Please include any special treatments or special notes about materials.</FormText>
-          </FormItem>
-    
-          <FormGroup>
-            <Label for="quantity">Quantity / How many do you need?</Label>
-
-            <InputGroup className="small">
-              <InputGroupAddon className="clickable" onClick={decr('quantity')}>-</InputGroupAddon>
-              <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
-              <InputGroupAddon className="clickable" onClick={incr('quantity')}>+</InputGroupAddon>
-            </InputGroup>
-          </FormGroup>
-
-          <FormGroup>
-            <Label for="quantity">What date do you need your parts back by?</Label>
-            <Datetime onChange={moment => setValueRaw('dueDate', moment.format('YYYY-MM-DD'))} name="dueDate" value={values['dueDate'] || ''} timeFormat={false} />
-          </FormGroup>
-
-          <Button onClick={() => { addToCart(jobRequest); history.push('#order-summary'); }} className="w-100" color="primary">Add to Cart</Button>
-        </FormItems>
-      </Form>
-    </div>
-  );
-};
-
-function validate(jobRequest) {
-  return [{ field: 'comments', error: "fpp bar baz" }];
-}
-
 function validateAndDispatch(jobRequest, dispatch) {
   const errors = validate(jobRequest);
-  errors.forEach( error => dispatch(setJobRequestError(error)) );
+  if(errors.length > 0) {
+    errors.forEach( error => dispatch(setJobRequestError(error)) );
+  }
   return errors;
 }
 
 function mapStateToProps(state) {
+  const jobRequest = state.jobRequest;
   return {
-    jobRequest: state.jobRequest
+    jobRequest,
+    errors: _.chain(validate(jobRequest)).map( ({ field, error }) => [field, error] ).fromPairs().value()
   };
 }
 
-function mapDispatchToProps(dispatch) {
+function mapDispatchToProps(dispatch, ownProps) {
+  const { history } = ownProps;
+  
   return {
     setValue: event => dispatch(setJobRequest({field: event.target.name, value: event.target.value})),
     setValueRaw: (field, value) => dispatch(setJobRequest({field, value})),
     addToCart: jobRequest => {
-      const errors = validateAndDispatch(jobRequest, dispatch);
+      const errors = validate(jobRequest);
       if(errors.length == 0) {
-        dispatch(addToCart(jobRequest))
+        dispatch(addToCart(jobRequest));
+        history.push('/checkout');
       }
     }
   };
@@ -272,7 +217,7 @@ const Step2 = ({ hasItemsInCart }) => (
       <ConnectedStep2Form />
     </Col>
     {hasItemsInCart ? (
-      <Col md="3">
+      <Col md="3" className="shopping-cart-sidebar">
         <ShoppingCart />
       </Col>
     ) : null}
