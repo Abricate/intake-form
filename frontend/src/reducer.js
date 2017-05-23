@@ -5,11 +5,14 @@ import jobRequest from './reducers/job-request';
 
 import {
   ADD_TO_CART,
+  REMOVE_FROM_CART,
   SET_CONTACT_INFO,
   JOB_REQUEST_SUBMITTED
 } from './actions';
 
-const defaultContactInfoForTesting = {
+const isDev = process.env.NODE_ENV === 'development';
+
+const TestContactInfo = {
   name: 'Foobar Baz',
   email: 'foo@example.com',
   phoneNumber: '(123) 456-7890',
@@ -18,7 +21,7 @@ const defaultContactInfoForTesting = {
   country: 'United States'
 }
 
-function contactInfo(state = {country: 'United States', /*...defaultContactInfoForTesting*/}, action) {
+function contactInfo(state = isDev ? TestContactInfo : {country: 'United States'}, action) {
   switch(action.type) {
     case SET_CONTACT_INFO:
       return {...state, [action.field]: action.value};
@@ -27,7 +30,7 @@ function contactInfo(state = {country: 'United States', /*...defaultContactInfoF
   }
 }
 
-const defaultCartForTesting = [{
+const TestCart = [{
   files: [
     {
       filename: 'test',
@@ -43,10 +46,12 @@ const defaultCartForTesting = [{
   validationErrors: {}
 }];
 
-function cart(state = [] /*defaultCartForTesting*/, action) {
+function cart(state = isDev ? TestCart : [], action) {
   switch(action.type) {
     case ADD_TO_CART:
       return [...state, action.jobRequest];
+    case REMOVE_FROM_CART:
+      return state.slice(0, action.idx).concat(state.slice(action.idx+1));
     case JOB_REQUEST_SUBMITTED:
       return [];
     default:

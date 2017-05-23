@@ -10,24 +10,22 @@ import {
   JOB_REQUEST_SUBMITTED
 } from '../actions';
 
-const Testing = process.env.NODE_ENV === 'development';
+const isDev = process.env.NODE_ENV === 'development';
 
 const EmptyJobRequest = {
   quantity: 1,
-  _materialCategory: 'Metal',
-  material: 'Hot rolled Steel',
   dueDate: moment().add(7, 'days').format('YYYY-MM-DD'),
 };
 
 const TestEmptyJobRequest = {
   ...EmptyJobRequest,
   _materialCategory: 'Metal',
-  material: 'Hot rolled Steel'
+  material: 'Hot Rolled Steel'
 };
 
-const FilesForTesting = [{ filename: 'test', originalName: 'foo'}];
+const TestFiles = [{ filename: 'test', originalName: 'foo'}];
 
-function files(state = Testing ? FilesForTesting : [], action) {
+function files(state = isDev ? TestFiles : [], action) {
   switch(action.type) {
     case ADD_FILES_TO_JOB_REQUEST:
       return state.concat(action.files)
@@ -39,7 +37,7 @@ function files(state = Testing ? FilesForTesting : [], action) {
   return state;
 }
 
-function props(state = Testing ? TestEmptyJobRequest : EmptyJobRequest, action) {
+function props(state = isDev ? TestEmptyJobRequest : EmptyJobRequest, action) {
   switch(action.type) {
     case SET_JOB_REQUEST:
       return {

@@ -60,3 +60,11 @@ export function addToCart(jobRequest) {
     jobRequest
   };
 }
+
+export const REMOVE_FROM_CART = 'REMOVE_FROM_CART';
+export function removeFromCart(idx) {
+  return {
+    type: REMOVE_FROM_CART,
+    idx
+  };
+}

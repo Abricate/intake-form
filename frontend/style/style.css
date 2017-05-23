@@ -1,7 +1,10 @@
-.btn-primary {
-  background-color: #F79201;
+.btn {
   border: none;
   cursor: pointer;
+}  
+
+.btn-primary {
+  background-color: #F79201;
 }
 
 .btn-primary:hover {
@@ -144,4 +147,8 @@ ul.order-summary > li > .key {
 
 .shopping-cart-sidebar ul.order-summary {
   flex-direction: column;
+}
+
+.shopping-cart-sidebar button.btn-danger {
+  padding: 0.125rem 0.125rem;
 }

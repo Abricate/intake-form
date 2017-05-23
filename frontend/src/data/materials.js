@@ -1,130 +1,124 @@
 import _ from 'lodash';
 
-const MaterialThickness = [
-  '1/16"',
-  '1/8"',
-  '3/16"',
-  '1/4"',
-  '3/8"',
-  '1/2"'
-];
-
-const SheetMetalGage = [
-  '30',
-  '28',
-  '26',
-  '24',
-  '22',
-  '20',
-  '18',
-  '16',
-  '14',
-  '12',
-  '10'
-];
-
-export const Area = [
-  '1ft x 1 ft',
-  '1ft x 2ft',
-  '2ft x 2ft',
-  '2ft x 4ft',
-  '4ft x 4ft',
-  '4ft x 8ft',
-  'Other'
-];
-
-export const Color = [
-  'Clear',
-  'Black',
-  'White',
+const CoroplastAndAcrylicColors = [
   'Red',
   'Yellow',
-  'Orange',
   'Green',
-  'Blue'
-];
-
-export const Tolerance = [
-  '2-6mm',
-  '1-2mm',
-  '1mm-500μm',
-  '500μm-200μm',
-  '200-100μm'
+  'Blue',
+  'Black',
+  'White',
+  'Clear',
 ];
 
 export const Materials = [
+  {
+    label: 'Plastic',
+    types: [
+      'Acrylic',
+      'Coroplast',
+      'Delrin',
+      'Edgelite',
+      'Neoprene',
+      'Silicon rubber',
+    ],
+    thicknesses: [
+      '1/16"',
+      '1/8"',
+      '3/16"',
+      '1/4',
+      '3/8"',
+      '1/2"',
+      '3.2mm',
+      '4mm',
+      '6mm',
+    ],
+    colors: {
+      'Coroplast': CoroplastAndAcrylicColors,
+      'Acrylic': CoroplastAndAcrylicColors,
+      'Delrin': ['Black', 'White']
+    },
+  },
+  {
+    label: 'Wood',
+    types: [
+      'Bamboo Ply',
+      'Birch Plywood',
+      'Cork',
+      'Melamine',
+      'MDF',
+      'Walnut Plywood',
+    ],
+    thicknesses: [
+      '3/16"',
+      '1/4"',
+      '3/8"',
+      '1/2"',
+      '5/8"',
+      '7/5"',
+    ],
+  },
   {
     label: 'Metal',
     types: [
       'Aluminum 5052',
       'Aluminum 6061',
       'Aluminum 6063',
-      'Aluminum 7075',
-      'Cold rolled Steel 1083',
-      'Hot rolled Steel',
+      'Cold Rolled Steel 1083',
+      'Hot Rolled Steel',
       'Stainless Steel 304',
     ],
-    thicknesses: MaterialThickness.concat(SheetMetalGage)
-  },
-  {
-    label: 'Plastic',
-    types: [
-      'Acrylic',
-      'Delrin',
-      'Coroplast',
-      'Polycarbonate',
-      'Abs',
+    thicknesses: [
+      '30 gage',
+      '28 gage',
+      '26 gage',
+      '24 gage',
+      '22 gage',
+      '20 gage',
+      '18 gage',
+      '16 gage',
+      '14 gage',
+      '12 gage',
+      '10 gage',
+      '1/8"',
+      '3/16"',
+      '1/4"',
+      '3/8"',
+      '1/2"',
+      '5/8"',
+      '.75"',
+      '1"',
     ],
-    thicknesses: MaterialThickness,
-    colors: Color
-  },
-  {
-    label: 'Woods and Fiberboards',
-    types: [
-      'Birch Plywood',
-      'Walnut Plywood',
-      'Bamboo Ply',
-    ],
-    thicknesses: MaterialThickness
-  },
-  {
-    label: 'Paper and Cardboard',
-    types: [
-      'Paper',
-      'Cardboard',
-      'Pressboard',
-    ]
   },
   {
     label: 'Fabric',
     types: [
-      'Fabric',
-      'Silk',
       'Cotton',
       'Felt',
-      'Ripstop nylon',
       'Leather',
-    ],
-    thicknesses: MaterialThickness,
-    colors: Color
-  },
-  {
-    label: 'Composites',
-    types: [
-      'Mylar',
-      'Fiber glass',
-      'Carbon fiber',
-      'MDF',
+      'Ripstop Nylon',
+      'Silk'
     ]
   },
   {
-    label: 'Ceramic and Glass',
+    label: 'Paper / Laminate / Composite',
     types: [
-      'Glass',
-      'Ceramic',
-    ],
-    thickness: MaterialThickness
+      'Carbon fiber /16"',
+      'Cardboard 1/8"',
+      'Fiber glass 1/16"',
+      'Flax composite 1/16"',
+      'Foamcore 1/8"',
+      'Foamcore 1/2"',
+      'Mylar',
+      'Paper 110lbs',
+      'Pressboard 1/16"',
+      'Rowmark 1/16"',
+      'Worbla',
+    ]
+  },
+  {
+    label: 'Custom material',
+    custom: true
   }
 ];
-export const MaterialsByLabel = _.keyBy(Materials, 'label');
 
+export const MaterialsByLabel = _.keyBy(Materials, 'label');

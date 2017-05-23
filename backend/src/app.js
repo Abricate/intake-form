@@ -4,13 +4,13 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var csurf = require('csurf');
 
 var index = require('./routes/index');
 var uploads = require('./routes/uploads');
 var jobs = require('./routes/jobs');
 
 var app = express();
-
 
 // Priority serve any static files.
 app.use(express.static(path.resolve(__dirname, '../../frontend/build')));
@@ -26,6 +26,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+if(app.settings.env !== 'development') {
+  app.use(csurf({ cookie: true }));
+}
 
 app.use('/', index);
 app.use('/uploads', uploads);

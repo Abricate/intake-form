@@ -17,6 +17,7 @@ import {
 } from 'reactstrap';
 import { withRouter } from 'react-router'
 import _ from 'lodash';
+import moment from 'moment-business-days';
 
 import 'react-datetime/css/react-datetime.css';
 
@@ -24,7 +25,7 @@ import Datetime from 'react-datetime';
 
 import ShoppingCart from './ShoppingCart';
 import Uploader from './Uploader';
-import { FormItem, FormItems } from './FormItems';
+import { FormItem, FormItems, FormItemGroup } from './FormItems';
 
 import { scrollToFirstFormElementWithError } from './util';
 
@@ -38,24 +39,55 @@ import * as MaterialsConfig from '../../data/materials';
 
 const MaterialCategories = _.map(MaterialsConfig.Materials, 'label');
 
+function isValidDate(current) {
+  const earliestDueDate = moment().businessAdd(2);
+
+  return current.day() !== 0 && current.day() !== 6 && current.isAfter(earliestDueDate);
+}
+
 function validate(jobRequest) {
-  const selectedMaterialCategory = MaterialsConfig.MaterialsByLabel[jobRequest['_materialCategory']];
-  const requiredFields = [
+  const selectedMaterialCategory = MaterialsConfig.MaterialsByLabel[jobRequest.props._materialCategory];
+  const hasColor = !!(selectedMaterialCategory &&
+                      selectedMaterialCategory.colors &&
+                      selectedMaterialCategory.colors[jobRequest.props.material]);
+  const hasThickness = !!(selectedMaterialCategory &&
+                          selectedMaterialCategory.thicknesses);
+  
+  let requiredFields = [
     '_materialCategory',
     'quantity',
     'dueDate',
     'material'
   ];
 
+  if(selectedMaterialCategory.custom) {
+    requiredFields.push(
+      'customMaterial.catalogLink',
+      'customMaterial.productName',
+      'customMaterial.productId',
+      'customMaterial.dimensions',
+      'customMaterial.price',
+      'customMaterial.msdsLink'
+    );
+  }
+  
+  if(hasColor) requiredFields.push('color');
+  if(hasThickness) requiredFields.push('materialThickness');
+  
   const missingProps = requiredFields.map( field => 
-    !jobRequest.props[field] ? { field, error: `${field} is required` } : null
+    !jobRequest.props[field] ? { field, error: true } : null
   ).filter( x => x != null);
 
   const missingFiles = (jobRequest.files.length === 0) ? [{ field: 'files', error: 'Please upload your part file'}] : [];
 
+  const invalidDate = isValidDate(moment(jobRequest.props.dueDate)) ? [] : [{
+    field: 'dueDate', error: 'Due date must be at least 2 business days in the future'
+  }];
+  
   return _.flatten([
     missingProps,
-    missingFiles
+    missingFiles,
+    invalidDate
   ]);
 }
 
@@ -81,7 +113,7 @@ class Step2Form extends React.Component {
   
   render() {
     const { jobRequest, setValue, setValueRaw, addToCart, history, errors } = this.props;
-    console.log(errors);
+
     const decr = field => () => {
       const value = parseInt(values[field]) - 1;
       setValueRaw(field, value < 1 ? 1 : value)
@@ -113,56 +145,84 @@ class Step2Form extends React.Component {
               <FormText color="muted">Please choose a material category.</FormText>
             </FormItem>
             {selectedMaterialCategory ? (
-              <div>
+            <div>
+                
+              {selectedMaterialCategory.types ? (
                 <FormItem label="Material" name="material" type="select" options={selectedMaterialCategory.types}>
                   <FormText color="muted">Please choose a material.</FormText>
                 </FormItem>
-
+              ) : null}
+              {selectedMaterialCategory.custom ? (
+                <div>
+                  <FormItemGroup>
+                    <FormItem label="Catalog link"
+                              sublabel="e.g. https://www.acrylite-shop.com/US/us/diffused-sign-grade-jevdiv6kbjg/acrylite-led-signflex-white-wdr58-df-f9bojki4l6b~p.html"
+                              name="customMaterial.catalogLink"
+                              type="text" />
+                  </FormItemGroup>
+                  <FormItemGroup>
+                    <FormItem label="Product name" name="customMaterial.productName" type="text" />
+                  </FormItemGroup>
+                  <FormItemGroup>
+                    <FormItem label="Catalog Product ID Number" name="customMaterial.productId" type="text" />
+                  </FormItemGroup>
+                  <FormItemGroup>
+                    <FormItem label="Dimensions" name="customMaterial.dimensions" type="text" />
+                  </FormItemGroup>
+                  <FormItemGroup>
+                    <FormItem label="Price" name="customMaterial.price" type="text" />
+                  </FormItemGroup>
+                  <FormItemGroup>
+                    <FormItem label="Link to MSDS" sublabel="e.g. http://www.alro.com/datapdf/plastics/plasticsmsds/msds_plexi_elit.pdf" name="customMaterial.msdsLink" type="text" />
+                  </FormItemGroup>
+                </div>
+              ) : null}
+              
+              {selectedMaterialCategory.colors && selectedMaterialCategory.colors[values.material] ? (
+                <FormItem label="Color" name="color" type="select" options={selectedMaterialCategory.colors[values.material]} />
+              ) : null}
+              {selectedMaterialCategory.thicknesses ? (
                 <FormItem label="Material Thickness" name="materialThickness" type="select" options={selectedMaterialCategory.thicknesses} />
-                <FormItem label="Area (Length and Width)" name="area" type="select" options={MaterialsConfig.Area} />
-                {selectedMaterialCategory.colors ? (
-                  <FormItem label="Color" name="color" type="select" options={selectedMaterialCategory.colors} />
-                ) : null}
+              ) : null}
 
-                <FormGroup color={validationErrors['files'] ? 'danger' : null}>
-                  <Label className="form-control-label">Upload Your File(s)</Label>
-                  <div id="files" style={{padding: 0}}className="form-control file-uploader">
-                    <Uploader endpoint="/uploads" />
-                  </div>
-                  {validationErrors['files'] && validationErrors['files'] !== true ? <FormFeedback>{validationErrors['files']}</FormFeedback> : null}
-                  <FormText color="muted">Please check your file before uploading. Use mm scale. All art work in the .dxf file will be quoted and cut. Remove all art/lines you don't want to cut including: dimensions, annotations, boarders, and hashes in the middle of circles. Check that all cutting lines are in one layer and all etching artwork is in a separate layer.</FormText>
-                </FormGroup>
+              <FormGroup color={validationErrors['files'] ? 'danger' : null}>
+                <Label className="form-control-label">Upload Your File(s)</Label>
+                <div id="files" style={{padding: 0}}className="form-control file-uploader">
+                  <Uploader endpoint="/uploads" />
+                </div>
+                {validationErrors['files'] && validationErrors['files'] !== true ? <FormFeedback>{validationErrors['files']}</FormFeedback> : null}
+                <FormText color="muted">Please check your file before uploading. Use mm scale. All art work in the .dxf file will be quoted and cut. Remove all art/lines you don't want to cut including: dimensions, annotations, boarders, and hashes in the middle of circles. Check that all cutting lines are in one layer and all etching artwork is in a separate layer.</FormText>
+              </FormGroup>
 
-                <FormItem label="Tolerance" name="tolerance" type="select" options={MaterialsConfig.Tolerance} />
+              <FormItem label="Job comments" name="comments" type="textarea">
+                <FormText color="muted">(optional) Please include any special treatments or special notes about materials.</FormText>
+              </FormItem>
+              
+              <FormGroup>
+                <Label for="quantity">Quantity / How many do you need?</Label>
 
-                <FormItem label="Job comments" name="comments" type="textarea">
-                  <FormText color="muted">Please include any special treatments or special notes about materials.</FormText>
-                </FormItem>
-                
-                <FormGroup>
-                  <Label for="quantity">Quantity / How many do you need?</Label>
+                <InputGroup className="small">
+                  <InputGroupAddon className="clickable" onClick={decr('quantity')}>-</InputGroupAddon>
+                  <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
+                  <InputGroupAddon className="clickable" onClick={incr('quantity')}>+</InputGroupAddon>
+                </InputGroup>
+              </FormGroup>
 
-                  <InputGroup className="small">
-                    <InputGroupAddon className="clickable" onClick={decr('quantity')}>-</InputGroupAddon>
-                    <Input type="text" name="quantity" id="quantity" onChange={setValue} value={values['quantity'] || ''} />
-                    <InputGroupAddon className="clickable" onClick={incr('quantity')}>+</InputGroupAddon>
-                  </InputGroup>
-                </FormGroup>
+              <FormGroup color={validationErrors['dueDate'] ? 'danger' : null} id="dueDate">
+                <Label className="form-control-label">What date do you need your parts back by?</Label>
+                <Datetime isValidDate={isValidDate} onChange={dueDateChanged} name="dueDate" value={values['dueDate'] || ''} timeFormat={false} />
+                {validationErrors['dueDate'] && validationErrors['dueDate'] !== true ? <FormFeedback>{validationErrors['dueDate']}</FormFeedback> : null}
+              </FormGroup>
 
-                <FormGroup>
-                  <Label for="quantity">What date do you need your parts back by?</Label>
-                  <Datetime onChange={dueDateChanged} name="dueDate" value={values['dueDate'] || ''} timeFormat={false} />
-                </FormGroup>
-
-                <Row>
-                  <Col>
-                    <Link to="/" className="btn btn-secondary w-100" color="secondary">&laquo; Edit Contact Info</Link>
-                  </Col>
-                  <Col>
-                    <Button onClick={this.handleAddToCart} className="w-100" color="primary">Add to Cart &raquo;</Button>
-                  </Col>
-                </Row>
-              </div>
+              <Row>
+                <Col>
+                  <Link to="/" className="btn btn-secondary w-100" color="secondary">&laquo; Edit Contact Info</Link>
+                </Col>
+                <Col>
+                  <Button onClick={this.handleAddToCart} className="w-100" color="primary">Add to Cart &raquo;</Button>
+                </Col>
+              </Row>
+            </div>
             ) : null}
           </FormItems>
         </Form>

@@ -23,22 +23,42 @@ const createJob = order => async job => {
   return {job: dbJob, boxFiles};
 };
 
-const customFields = new Set([
-  'Files',
-  'Material',
-  'Tolerance',
-  'Turn Around',
-  'Vendor',
-]);
+const customFields = {
+  'Files': 'text',
+  'Material': 'varchar',
+  'Color': 'varchar',
+  'Material Thickness': 'varchar',
+  'Comments': 'text',
+  'Quantity': 'double',
+  'Due Date': 'date',
+  'CM: Catalog Link': 'varchar',
+  'CM: Product Name': 'varchar',
+  'CM: Product ID': 'varchar',
+  'CM: Dimensions': 'varchar',
+  'CM: Price': 'varchar',
+  'CM: MSDS Link': 'varchar'
+};
 
 const customFieldKeys = pipedrive.DealFields.getAll().then( fields => {
   const pairs = fields.filter( field =>
-    customFields.has(field.name)
+    customFields.hasOwnProperty(field.name)
   ).map( field =>
     [field.name, field.key]
   );
 
-  return _.fromPairs(pairs);
+  const existingFields = _.fromPairs(pairs);
+
+  const missingFieldNames = _.difference(_.keys(customFields), _.keys(existingFields));
+
+  return Promise.all(
+    missingFieldNames.map(name => {
+      const field_type = customFields[name];
+      return pipedrive.DealFields.add({ name, field_type }).then( field => [name, field.key] );
+    })
+  ).then(_.fromPairs).then( missingFields => ({
+    ...existingFields,
+    ...missingFields
+  }));
 })
 
 async function addDeal(_deal) {
@@ -101,7 +121,17 @@ router.post('/', async function(req, res) {
       custom: {
         'Files': _.map(boxFiles, 'sharedLinkUrl').join(' '),
         'Material': jobProps.material,
-        'Tolerance': jobProps.tolerance
+        'Color': jobProps.color,
+        'Material Thickness': jobProps.materialThickness,
+        'Comments': jobProps.comments,
+        'Quantity': jobProps.quantity,
+        'Due Date': jobProps.dueDate,
+        'CM: Catalog Link': jobProps['customMaterial.catalogLink'],
+        'CM: Product Name': jobProps['customMaterial.productName'],
+        'CM: Product ID': jobProps['customMaterial.productId'],
+        'CM: Dimensions': jobProps['customMaterial.dimensions'],
+        'CM: Price': jobProps['customMaterial.price'],
+        'CM: MSDS Link': jobProps['customMaterial.msdsLink'],
       }
     });
     await Job.update({pipedriveDealId: deal.id}, {where: {id: job.id}})

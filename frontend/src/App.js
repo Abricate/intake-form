@@ -67,7 +67,7 @@ class App extends Component {
             </Container>
 
             <Container fluid>
-              <iframe style={footerStyle} src="http://abricateproduction.businesscatalyst.com/footer.html" />
+              <iframe style={footerStyle} src="http://www.abricate.com/footer.html" />
             </Container>
           </div>
         </Router>
