@@ -35,6 +35,7 @@ if(app.settings.env !== 'development') {
 }
 
 app.get( '/index.html', indexHtml);
+app.get( '/', (req, res, next) => { if(req.path !== '/') next(); else indexHtml(req, res, next); });
 
 // Priority serve any static files.
 app.use(express.static(path.resolve(__dirname, '../../frontend/build')));
