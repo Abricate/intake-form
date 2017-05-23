@@ -49,9 +49,20 @@ function props(state = isDev ? TestEmptyJobRequest : EmptyJobRequest, action) {
   return state;
 }
 
+function empty(state = true, action) {
+  switch(action.type) {
+    case SET_JOB_REQUEST:
+    case ADD_FILES_TO_JOB_REQUEST:
+      return false;
+  }
+
+  return state;
+}
+
 const jobRequestReducer = combineReducers({
   files,
-  props
+  props,
+  empty
 });
 
 // reset jobRequest to default state on ADD_TO_CART or JOB_REQUEST_SUBMITTED

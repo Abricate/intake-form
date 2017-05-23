@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import {
   BrowserRouter as Router,
   Route,
-  Link
+  Prompt,
+  Link,
+  withRouter
 } from 'react-router-dom';
-import { Provider } from 'react-redux';
+import { connect, Provider } from 'react-redux';
 import { Container, Collapse, Navbar, NavbarBrand, Nav, NavItem, NavLink } from 'reactstrap';
 
 import 'bootstrap/dist/css/bootstrap.css';
@@ -17,7 +19,6 @@ import store from './store';
 import Step1 from './components/form/Step1';
 import Step2 from './components/form/Step2';
 import Checkout from './components/form/Checkout';
-
 import Success from './components/Success';
 
 const footerStyle = {
@@ -25,6 +26,14 @@ const footerStyle = {
   width: '100%',
   height: '420px',
   border: '0'
+}
+
+window.onbeforeunload = function(e) {
+  const state = store.getState();
+  if(!state.jobRequest.empty || state.cart.length !== 0) {
+    e.returnValue = "Are you sure you want to leave? You haven't submitted your job request yet.";
+    return e.returnValue;
+  }
 }
 
 class App extends Component {

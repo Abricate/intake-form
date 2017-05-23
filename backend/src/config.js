@@ -32,7 +32,7 @@ const config = {
       uri: process.env.DATABASE_URL
     },
     pipedrive: {
-      token: 'b8560bf3dc15905f41f65650604cddc2f11038c0'
+      token: 'aafe2fba2dcd9f80f686c7dc28f14b9b70f65698'
     }
   }
 }
