@@ -60,7 +60,7 @@ function validate(jobRequest) {
     'material'
   ];
 
-  if(selectedMaterialCategory.custom) {
+  if(selectedMaterialCategory && selectedMaterialCategory.custom) {
     requiredFields.push(
       'customMaterial.catalogLink',
       'customMaterial.productName',
