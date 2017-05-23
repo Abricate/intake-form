@@ -29,8 +29,14 @@ const config = {
   },
   production: {
     db: {
-      uri: process.env.DATABASE_URL
+      database: 'abricate',
+      host: 'localhost',
+      port: 5433,
+      dialect: 'postgres',
     },
+    /* db: {
+     *   uri: process.env.DATABASE_URL
+     * },*/
     pipedrive: {
       token: 'b8560bf3dc15905f41f65650604cddc2f11038c0'
     }

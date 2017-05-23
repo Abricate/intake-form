@@ -29,7 +29,6 @@ function validate(values) {
 class Step1 extends React.Component {
   constructor(props) {
     super(props);
-    console.log(props);
     this.state = {
       showErrors: false
     };

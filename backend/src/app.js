@@ -5,12 +5,36 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var csurf = require('csurf');
+var stringReplace = require('string-replace-middleware');
+var fs = require('fs');
 
 var index = require('./routes/index');
 var uploads = require('./routes/uploads');
 var jobs = require('./routes/jobs');
 
 var app = express();
+
+app.use(cookieParser());
+
+const indexHtml = (req, res, next) => {
+  if(req.csrfToken) {
+    fs.readFile(path.resolve(__dirname, '../../frontend/build/index.html'), 'utf8', (err, data) => {
+      if(err) throw err;
+
+      res.send(
+        data.replace('__REPLACE_WITH_CSRF_TOKEN__', req.csrfToken())
+      );
+    });
+  } else {
+    res.sendFile(path.resolve(__dirname, '../../frontend/build/index.html'));
+  }
+}
+
+if(app.settings.env !== 'development') {
+  app.use(csurf({ cookie: true }));
+}
+
+app.get( '/index.html', indexHtml);
 
 // Priority serve any static files.
 app.use(express.static(path.resolve(__dirname, '../../frontend/build')));
@@ -24,16 +48,15 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-if(app.settings.env !== 'development') {
-  app.use(csurf({ cookie: true }));
-}
 
 app.use('/', index);
 app.use('/uploads', uploads);
 app.use('/jobs', jobs);
+
+// all other routes just return index.html
+app.get('*', indexHtml);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

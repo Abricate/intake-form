@@ -58,7 +58,11 @@ class Uploader extends React.Component {
     } = this.props;
     
     try {
-      const req = request.post(endpoint);
+      const req =
+        request
+          .post(endpoint)
+          .set('x-csrf-token', window.__CSRF_TOKEN__);
+      
       acceptedFiles.forEach(file => {
         req.attach('files', file);
       });

@@ -6,7 +6,6 @@ import { Alert, Button } from 'reactstrap';
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
 import request from 'superagent';
-import Cookies from 'js-cookie';
 
 import OrderSummary from './OrderSummary';
 import { jobRequestSubmitted } from '../../actions';
@@ -29,14 +28,12 @@ class Checkout extends React.Component {
     } else {
       this.setState({ submitting: true });
 
-      const csrfToken = Cookies.get('_csrf');
-      
       request
         .post('/jobs')
         .send(_.pick(this.props, ['cart', 'contactInfo']))
         .set('Accept', 'application/json')
-        .set('x-csrf-token', csrfToken)
-          .end((error, res) => {
+        .set('x-csrf-token', window.__CSRF_TOKEN__)
+        .end((error, res) => {
           if(error) {
             this.setState({ error, submitting: false });
           } else {

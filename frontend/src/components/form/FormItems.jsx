@@ -70,7 +70,7 @@ FormItemContainer.childContextTypes = {
 
 export const FormItemGroup = ({ children }, { values, validationErrors, setValue }) => {
   const childNames = childrenFormItems(children).map(formItem => formItem.props.name);
-  console.log({children,childNames,validationErrors});
+
   // if any of the children of the group have errors
   const hasErrors = !_.isEmpty(_.intersection(Object.keys(validationErrors), childNames));
 

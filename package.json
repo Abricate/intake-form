@@ -38,7 +38,8 @@
     "pipedrive": "^3.0.1",
     "react-transition-group": "^1.1.3",
     "sequelize": "^3.30.4",
-    "serve-favicon": "~2.4.2"
+    "serve-favicon": "~2.4.2",
+    "string-replace-middleware": "0.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
