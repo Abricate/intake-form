@@ -11,6 +11,7 @@
     "moment-business-days": "0.0.10",
     "prop-types": "^15.5.8",
     "query-string": "^4.3.4",
+    "raven-js": "^3.15.0",
     "react": "^15.5.4",
     "react-addons-css-transition-group": "^15.5.2",
     "react-addons-transition-group": "^15.5.2",

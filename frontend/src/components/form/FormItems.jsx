@@ -94,7 +94,7 @@ export const FormItem = ({ children, label, sublabel, name, type, options, ...re
         {options !== undefined ? mkOptions(options) : null}
       </Input>
       {errorText ? <FormFeedback>{errorText}</FormFeedback> : (sublabel ? <FormText color="muted">{sublabel}</FormText> : null)}
-      {children}      
+      {children}
     </div>
   );
 

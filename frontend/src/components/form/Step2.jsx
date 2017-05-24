@@ -102,7 +102,7 @@ class Step2Form extends React.Component {
 
   handleAddToCart() {
     const { addToCart, errors, jobRequest } = this.props;
-
+    
     if(!_.isEmpty(errors)) {
       scrollToFirstFormElementWithError(errors);
     }

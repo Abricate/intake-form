@@ -17,17 +17,15 @@ var app = express();
 app.use(cookieParser());
 
 const indexHtml = (req, res, next) => {
-  if(req.csrfToken) {
-    fs.readFile(path.resolve(__dirname, '../../frontend/build/index.html'), 'utf8', (err, data) => {
-      if(err) throw err;
-
-      res.send(
-        data.replace('__REPLACE_WITH_CSRF_TOKEN__', req.csrfToken())
-      );
-    });
-  } else {
-    res.sendFile(path.resolve(__dirname, '../../frontend/build/index.html'));
-  }
+  const csrfToken = req.csrfToken && req.csrfToken();
+  
+  fs.readFile(path.resolve(__dirname, '../../frontend/build/index.html'), 'utf8', (err, data) => {
+    if(err) throw err;
+    res.send(data
+      .replace('/*__REPLACE_WITH_CSRF_TOKEN__*/null', JSON.stringify(csrfToken || ''))
+      .replace('/*__REPLACE_WITH_NODE_ENV__*/null', JSON.stringify(app.settings.env))
+    );
+  });
 }
 
 if(app.settings.env !== 'development') {
