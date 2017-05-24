@@ -17,11 +17,14 @@
     <script src="https://cdn.ravenjs.com/3.15.0/raven.min.js"></script>
 
     <script>
-      window.__CSRF_TOKEN__ = /*__REPLACE_WITH_CSRF_TOKEN__*/null || '';
+      window.__CSRF_TOKEN__ = "__REPLACE_WITH_CSRF_TOKEN__";
     </script>
 
     <script>
-      Raven.config('https://b9fd130f86204c618f3a6eba66c5dbfb@sentry.io/171513', { environment: /*__REPLACE_WITH_NODE_ENV__*/null || 'development'}).install()
+      var env = "__REPLACE_WITH_NODE_ENV__";
+      env = env == "__REPLACE_WITH_NODE_ENV__" ? 'development' : env;
+      
+      Raven.config('https://b9fd130f86204c618f3a6eba66c5dbfb@sentry.io/171513', {environment: env}).install()
     </script>
     
     <title>Abricate</title>

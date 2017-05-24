@@ -22,14 +22,16 @@ const indexHtml = (req, res, next) => {
   fs.readFile(path.resolve(__dirname, '../../frontend/build/index.html'), 'utf8', (err, data) => {
     if(err) throw err;
     res.send(data
-      .replace('/*__REPLACE_WITH_CSRF_TOKEN__*/null', JSON.stringify(csrfToken || ''))
-      .replace('/*__REPLACE_WITH_NODE_ENV__*/null', JSON.stringify(app.settings.env))
+      .replace('__REPLACE_WITH_CSRF_TOKEN__', csrfToken || '')
+      .replace('__REPLACE_WITH_NODE_ENV__', app.settings.env)
     );
   });
 }
 
 if(app.settings.env !== 'development') {
   app.use(csurf({ cookie: true }));
+} else {
+  console.log('warning: not using CSRF protection in dev environment');
 }
 
 app.get( '/index.html', indexHtml);
