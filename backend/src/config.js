@@ -32,7 +32,7 @@ const config = {
       uri: process.env.DATABASE_URL
     },
     pipedrive: {
-      token: 'aafe2fba2dcd9f80f686c7dc28f14b9b70f65698'
+      token: '06e92cde99f28431e993b8bafc67ad4dd7a5e76d' // <-- this is Andy Lee's API key
     }
   }
 }
