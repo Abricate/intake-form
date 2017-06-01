@@ -31,6 +31,7 @@ const customFields = {
   'Comments': 'text',
   'Quantity': 'double',
   'Due Date': 'date',
+  'Shipping Address': 'text',
   'CM: Catalog Link': 'varchar',
   'CM: Product Name': 'varchar',
   'CM: Product ID': 'varchar',
@@ -110,6 +111,14 @@ router.post('/', async function(req, res) {
       personId: response.id.toString()
     })
   }
+
+  const contactInfoString = `
+${contactInfo.name}
+${contactInfo.email}
+${contactInfo.phoneNumber}
+${contactInfo.address1}
+${contactInfo.address2}
+${contactInfo.zipcode}, ${contactInfo.country}`.trim();
   
   // create deal(s) in pipedrive
   await Promise.all(jobs.map( async ({job, boxFiles}) => {
@@ -126,6 +135,7 @@ router.post('/', async function(req, res) {
         'Comments': jobProps.comments,
         'Quantity': jobProps.quantity,
         'Due Date': jobProps.dueDate,
+        'Shipping Address': contactInfoString,
         'CM: Catalog Link': jobProps['customMaterial.catalogLink'],
         'CM: Product Name': jobProps['customMaterial.productName'],
         'CM: Product ID': jobProps['customMaterial.productId'],
