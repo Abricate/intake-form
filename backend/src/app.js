@@ -1,3 +1,6 @@
+var Raven = require('raven');
+Raven.config('https://e2402d5636474781a5d216e185bfc12b:60bf73b5ca8446c592ade4fb0630b08c@sentry.io/175110').install();
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -13,6 +16,10 @@ var uploads = require('./routes/uploads');
 var jobs = require('./routes/jobs');
 
 var app = express();
+
+// see https://docs.sentry.io/clients/node/integrations/express/
+// The request handler must be the first middleware on the app
+app.use(Raven.requestHandler());
 
 app.use(cookieParser());
 
@@ -65,6 +72,10 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
+
+// see https://docs.sentry.io/clients/node/integrations/express/
+// The error handler must be before any other error middleware
+app.use(Raven.errorHandler());
 
 // error handler
 app.use(function(err, req, res, next) {
