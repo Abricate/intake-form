@@ -113,12 +113,12 @@ router.post('/', async function(req, res) {
   }
 
   const contactInfoString = `
-${contactInfo.name}
-${contactInfo.email}
-${contactInfo.phoneNumber}
-${contactInfo.address1}
-${contactInfo.address2}
-${contactInfo.zipcode}, ${contactInfo.country}`.trim();
+${contactInfo.name || ''}
+${contactInfo.email || ''}
+${contactInfo.phoneNumber || ''}
+${contactInfo.address1 || ''}
+${contactInfo.address2 || ''}
+${contactInfo.zipcode || ''}, ${contactInfo.country || ''}`.trim();
   
   // create deal(s) in pipedrive
   await Promise.all(jobs.map( async ({job, boxFiles}) => {
