@@ -21,6 +21,8 @@ import Step2 from './components/form/Step2';
 import Checkout from './components/form/Checkout';
 import Success from './components/Success';
 
+import Footer from './components/Footer';
+
 const footerStyle = {
   marginTop: '100px',
   width: '100%',
@@ -31,8 +33,8 @@ const footerStyle = {
 window.onbeforeunload = function(e) {
   const state = store.getState();
   if(!state.jobRequest.empty || state.cart.length !== 0) {
-    e.returnValue = "Are you sure you want to leave? You haven't submitted your job request yet.";
-    return e.returnValue;
+//    e.returnValue = "Are you sure you want to leave? You haven't submitted your job request yet.";
+//    return e.returnValue;
   }
 }
 
@@ -49,10 +51,10 @@ class App extends Component {
                 <Collapse isOpen={true} navbar>
                   <Nav className="ml-auto" navbar>
                     <NavItem>
-                      <NavLink active href="/job-request">Job Request</NavLink>
+                      <NavLink href="http://abricate.com/index.html">Fabricate</NavLink>
                     </NavItem>
                     <NavItem>
-                      <NavLink href="http://abricate.com/index.html">Fabricate</NavLink>
+                      <NavLink active href="/job-request">Job Request</NavLink>
                     </NavItem>
                     <NavItem>
                       <NavLink href="http://abricate.com/team.html">Team</NavLink>
@@ -74,10 +76,11 @@ class App extends Component {
               <Route path="/checkout" component={Checkout} />
               <Route path="/success" component={Success} />
             </Container>
-
-            <Container fluid>
-              <iframe style={footerStyle} src="http://www.abricate.com/footer.html" />
-            </Container>
+            <div className="footer">
+              <Container>
+                <Footer />
+              </Container>
+            </div>
           </div>
         </Router>
       </Provider>

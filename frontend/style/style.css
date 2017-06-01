@@ -152,3 +152,18 @@ ul.order-summary > li > .key {
 .shopping-cart-sidebar button.btn-danger {
   padding: 0.125rem 0.125rem;
 }
+
+/* FOOTER STUFF */
+.nsf-text {
+  color: #D4B443;
+}
+
+.footer {
+  background: #25292C url(/images/footer-map.png) no-repeat center center;
+  padding: 43px 120px 83px 100px;
+}
+
+.footer h2 {
+  font-size: 24px;
+  color: white;
+}
