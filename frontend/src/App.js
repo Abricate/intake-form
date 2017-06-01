@@ -16,6 +16,8 @@ import AbricateLogo from '../images/abricate-logo.png';
 
 import store from './store';
 
+import ScrollToTop from './components/ScrollToTop';
+
 import Step1 from './components/form/Step1';
 import Step2 from './components/form/Step2';
 import Checkout from './components/form/Checkout';
@@ -43,45 +45,47 @@ class App extends Component {
     return (
       <Provider store={store}>
         <Router>
-          <div>
-            <Container>
-              <Navbar toggleable>
-                <NavbarBrand href="http://www.abricate.com/"><img src={AbricateLogo} /></NavbarBrand>
-
-                <Collapse isOpen={true} navbar>
-                  <Nav className="ml-auto" navbar>
-                    <NavItem>
-                      <NavLink href="http://abricate.com/index.html">Fabricate</NavLink>
-                    </NavItem>
-                    <NavItem>
-                      <NavLink active href="/job-request">Job Request</NavLink>
-                    </NavItem>
-                    <NavItem>
-                      <NavLink href="http://abricate.com/team.html">Team</NavLink>
-                    </NavItem>
-                    <NavItem>
-                      <NavLink href="http://abricate.com/abricate.html">Abricate</NavLink>
-                    </NavItem>
-                  </Nav>
-                </Collapse>
-              </Navbar>
-            </Container>
-            <Container fluid>
-              <div className="breadcrumb-bar">
-              </div>
-            </Container>
-            <Container>
-              <Route exact path="/" component={Step1} />
-              <Route path="/step2" component={Step2} />
-              <Route path="/checkout" component={Checkout} />
-              <Route path="/success" component={Success} />
-            </Container>
-            <div className="footer">
+          <ScrollToTop>
+            <div>
               <Container>
-                <Footer />
+                <Navbar toggleable>
+                  <NavbarBrand href="http://www.abricate.com/"><img src={AbricateLogo} /></NavbarBrand>
+
+                  <Collapse isOpen={true} navbar>
+                    <Nav className="ml-auto" navbar>
+                      <NavItem>
+                        <NavLink href="http://abricate.com/index.html">Fabricate</NavLink>
+                      </NavItem>
+                      <NavItem>
+                        <NavLink active href="/job-request">Job Request</NavLink>
+                      </NavItem>
+                      <NavItem>
+                        <NavLink href="http://abricate.com/team.html">Team</NavLink>
+                      </NavItem>
+                      <NavItem>
+                        <NavLink href="http://abricate.com/abricate.html">Abricate</NavLink>
+                      </NavItem>
+                    </Nav>
+                  </Collapse>
+                </Navbar>
               </Container>
+              <Container fluid>
+                <div className="breadcrumb-bar">
+                </div>
+              </Container>
+              <Container>
+                <Route exact path="/" component={Step1} />
+                <Route path="/step2" component={Step2} />
+                <Route path="/checkout" component={Checkout} />
+                <Route path="/success" component={Success} />
+              </Container>
+              <div className="footer">
+                <Container>
+                  <Footer />
+                </Container>
+              </div>
             </div>
-          </div>
+          </ScrollToTop>
         </Router>
       </Provider>
     );
