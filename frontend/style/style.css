@@ -50,6 +50,7 @@ nav {
 h2 {
   color: #F79201;
   font-size: 44px;
+  font-weight: 300;
 }
 
 h1, h2, h3 {
@@ -151,4 +152,54 @@ ul.order-summary > li > .key {
 
 .shopping-cart-sidebar button.btn-danger {
   padding: 0.125rem 0.125rem;
+}
+
+/* FOOTER STUFF */
+.nsf-text {
+  color: #D4B443;
+}
+
+.footer {
+  background: #25292C url(/images/footer-map.png) no-repeat center center;
+  padding: 43px 120px 83px 100px;
+  margin-top: 4rem;
+  color: #9699A6;
+}
+
+.footer h2 {
+  font-size: 24px;
+  color: white;
+}
+
+.footer .lead {
+  font-weight: 300;
+  font-size: 16px;
+}
+
+.footer input, .footer button {
+  width: 100%;
+}
+
+.footer dd {
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+}
+
+.footer dt {
+  font-size: 14px;
+  font-weight: 400;
+  margin-left: 42px;
+}
+
+.footer dt {
+  margin-bottom: 1rem;
+}
+
+.footer dd::after {
+  content: ': ';
+}
+
+.footer .copyright {
+  margin-top: 6rem;
 }

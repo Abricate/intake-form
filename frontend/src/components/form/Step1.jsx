@@ -61,7 +61,7 @@ class Step1 extends React.Component {
             <FormItem label="Phone Number" name="phoneNumber" type="tel" placeholder="(415) 555-1234" />
 
             <FormItemGroup>
-              <FormItem label="Address" sublabel="Street Address" name="address1" type="text" />
+              <FormItem label="Shipping Address" sublabel="Street Address" name="address1" type="text" />
               <FormItem name="address2" type="text" sublabel="Line 2" />
               <Row>
                 <Col>
