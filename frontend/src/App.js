@@ -33,8 +33,8 @@ const footerStyle = {
 window.onbeforeunload = function(e) {
   const state = store.getState();
   if(!state.jobRequest.empty || state.cart.length !== 0) {
-//    e.returnValue = "Are you sure you want to leave? You haven't submitted your job request yet.";
-//    return e.returnValue;
+    e.returnValue = "Are you sure you want to leave? You haven't submitted your job request yet.";
+    return e.returnValue;
   }
 }
 
@@ -46,7 +46,7 @@ class App extends Component {
           <div>
             <Container>
               <Navbar toggleable>
-                <NavbarBrand href="/"><img src={AbricateLogo} /></NavbarBrand>
+                <NavbarBrand href="http://www.abricate.com/"><img src={AbricateLogo} /></NavbarBrand>
 
                 <Collapse isOpen={true} navbar>
                   <Nav className="ml-auto" navbar>
