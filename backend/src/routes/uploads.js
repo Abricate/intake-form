@@ -3,7 +3,7 @@ import express from 'express';
 import multer from 'multer';
 import _ from 'lodash';
 import path from 'path';
-import { extension as mimeExtension } from 'mime-types';
+import { extension as mimeExtension, lookup as mimeLookup } from 'mime-types';
 
 import db, { createBoxFile } from '../db';
 import box, { uploadFileToBox } from '../clients/box';
@@ -22,12 +22,59 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+/* if provided file mimetype is any of these, ignore it */
+const fileMimetypeBlacklist = [
+  'application/octet-stream',
+  '',
+  null,
+  undefined
+]
+
+const fileExtensionWhitelist = [
+  'ai',
+  'dwg',
+  'dxf',
+  'pdf',
+  'svg',
+];
+
 router.post('/', upload.array('files'), async function(req, res) {
   const boxFiles = _.fromPairs(await Promise.all(
     _.values(req.files).map ( async file => {
       const filepath = path.join(UploadDir, file.filename);
-      const mimeType = await mime(filepath);
-      const extension = mimeExtension(mimeType);
+
+      /* infer mimetype and extension from upload
+       * using following order of precedence:
+       *   - mimetype set by browser on uplaod (unless in blacklist)
+       *   - file extension on original file if in whitelist
+       *   - mimetype from file extension
+       *   - mimetype using mime magic from file contents
+       *   - extension for mime magic inferred mimetype
+       */
+                       
+      let mimetype, extension;
+      
+      if(!fileMimetypeBlacklist.includes(file.mimetype)) {
+        mimetype = file.mimetype;
+      }
+
+      const m = file.originalname.match(/.*\.(.*)/);
+      if(m !== null) {
+        const fileExtension = m[1].toLowerCase();
+        if(fileExtensionWhitelist.includes(fileExtension)) {
+          mimetype = mimetype || mimeLookup(fileExtension);
+          extension = extension || fileExtension;
+        }
+      }
+
+      if(!mimetype) {
+        mimetype = await mime(filepath);
+      }
+
+      if(mimetype && !extension) {
+        extension = mimeExtension(mimetype);
+      }
+      
       const destFilename = extension ? file.filename + '.' + extension : file.filename;
       console.log('uploading to box', filepath, destFilename);
       const boxFile = await uploadFileToBox(filepath, destFilename);
