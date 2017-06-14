@@ -57,7 +57,7 @@ class App extends Component {
                         <NavLink href="http://abricate.com/index.html">Fabricate</NavLink>
                       </NavItem>
                       <NavItem>
-                        <NavLink active href="/job-request">Job Request</NavLink>
+                        <NavLink active href="/">Job Request</NavLink>
                       </NavItem>
                       <NavItem>
                         <NavLink href="http://abricate.com/team.html">Team</NavLink>
