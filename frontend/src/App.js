@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {
   BrowserRouter as Router,
   Route,
+  Switch,
   Prompt,
   Link,
   withRouter
@@ -12,9 +13,10 @@ import { Container, Collapse, Navbar, NavbarBrand, Nav, NavItem, NavLink } from 
 import 'bootstrap/dist/css/bootstrap.css';
 import '../style/style.css';
 
-import AbricateLogo from '../images/abricate-logo.png';
-
 import store from './store';
+import { isProduction } from './util';
+
+import AbricateApp from './templates/AbricateApp';
 
 import ScrollToTop from './components/ScrollToTop';
 
@@ -23,7 +25,8 @@ import Step2 from './components/form/Step2';
 import Checkout from './components/form/Checkout';
 import Success from './components/Success';
 
-import Footer from './components/Footer';
+import Invoice from './components/Invoice';
+import InvoicePayment from './components/InvoicePayment';
 
 const footerStyle = {
   marginTop: '100px',
@@ -34,7 +37,7 @@ const footerStyle = {
 
 window.onbeforeunload = function(e) {
   const state = store.getState();
-  if(!state.jobRequest.empty || state.cart.length !== 0) {
+  if(!state.jobRequest.empty || state.cart.length !== 0 && isProduction()) {
     e.returnValue = "Are you sure you want to leave? You haven't submitted your job request yet.";
     return e.returnValue;
   }
@@ -46,45 +49,21 @@ class App extends Component {
       <Provider store={store}>
         <Router>
           <ScrollToTop>
-            <div>
+            <AbricateApp>
               <Container>
-                <Navbar toggleable>
-                  <NavbarBrand href="http://www.abricate.com/"><img src={AbricateLogo} /></NavbarBrand>
+                <Switch>
+                  {/* job request creation routes */}
+                  <Route exact path="/" component={Step1} />
+                  <Route path="/step2" component={Step2} />
+                  <Route path="/checkout" component={Checkout} />
+                  <Route path="/success" component={Success} />
 
-                  <Collapse isOpen={true} navbar>
-                    <Nav className="ml-auto" navbar>
-                      <NavItem>
-                        <NavLink href="http://abricate.com/index.html">Fabricate</NavLink>
-                      </NavItem>
-                      <NavItem>
-                        <NavLink active href="/">Job Request</NavLink>
-                      </NavItem>
-                      <NavItem>
-                        <NavLink href="http://abricate.com/team.html">Team</NavLink>
-                      </NavItem>
-                      <NavItem>
-                        <NavLink href="http://abricate.com/abricate.html">Abricate</NavLink>
-                      </NavItem>
-                    </Nav>
-                  </Collapse>
-                </Navbar>
+                  {/* view invoice routes */}
+                  <Route exact path="/invoice/:id" component={Invoice} />
+                  <Route path="/invoice/:id/payment" component={InvoicePayment} />
+                </Switch>
               </Container>
-              <Container fluid>
-                <div className="breadcrumb-bar">
-                </div>
-              </Container>
-              <Container>
-                <Route exact path="/" component={Step1} />
-                <Route path="/step2" component={Step2} />
-                <Route path="/checkout" component={Checkout} />
-                <Route path="/success" component={Success} />
-              </Container>
-              <div className="footer">
-                <Container>
-                  <Footer />
-                </Container>
-              </div>
-            </div>
+            </AbricateApp>
           </ScrollToTop>
         </Router>
       </Provider>

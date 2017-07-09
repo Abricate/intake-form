@@ -66,6 +66,22 @@ export const BoxFile = sequelize.define('box_file', {
   downloadUrl: Sequelize.TEXT  
 });
 
+export const Invoice = sequelize.define('invoice', {
+  identifier: {type: Sequelize.STRING(16), unique: true},
+  shippingAddress: Sequelize.JSONB,
+  billingAddress: Sequelize.JSONB,
+  shippingCost: Sequelize.INTEGER,
+  published: Sequelize.BOOLEAN
+});
+
+export const InvoiceLineItem = sequelize.define('invoice_line_item', {
+  props: Sequelize.TEXT,
+  description: Sequelize.STRING,
+  quantity: Sequelize.INTEGER,
+  unitPrice: Sequelize.INTEGER,
+  total: Sequelize.INTEGER
+});
+
 Job.belongsToMany(BoxFile, { as: 'Files', through: {model: JobFiles, scope: {type: 'BoxFile'}} });
 BoxFile.belongsToMany(Job, { as: 'Jobs', through: {model: JobFiles, scope: {type: 'BoxFile'}} });
 User.hasOne(PipedrivePerson);
@@ -78,6 +94,9 @@ Order.hasMany(Job);
 User.hasMany(Order);
 ContactInfo.belongsTo(Order);
 Order.hasOne(ContactInfo, {as: 'ContactInfo'});
+Invoice.belongsTo(Order);
+InvoiceLineItem.belongsTo(Invoice);
+InvoiceLineItem.belongsTo(Job);
 
 export async function createOrder(order) {
   let tries = 100;

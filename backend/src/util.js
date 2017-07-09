@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export const promisify = fn => (...args) => new Promise( (resolve, reject) => {
   fn(...args, (err, result) => {
     if(err) {
@@ -18,3 +20,8 @@ export function reduce(stream) { return (callback, initialValue = null) => {
   }
 }}
 
+export function diff(a, b) {
+  return _.omitBy(b, (value, key) =>
+    a[key] === value || _.isEqual(a[key], value)
+  );
+}

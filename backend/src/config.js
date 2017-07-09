@@ -24,7 +24,7 @@ const config = {
       dialect: 'postgres',
     },
     pipedrive: {
-      token: 'b8560bf3dc15905f41f65650604cddc2f11038c0' // <-- sandbox key. production key: 'aafe2fba2dcd9f80f686c7dc28f14b9b70f65698'
+      token: 'be29aa61e20716913c60a2646a6073090ba63523' // <-- sandbox key. production key: 'aafe2fba2dcd9f80f686c7dc28f14b9b70f65698'
     }
   },
   production: {
@@ -32,7 +32,11 @@ const config = {
       uri: process.env.DATABASE_URL
     },
     pipedrive: {
-      token: '06e92cde99f28431e993b8bafc67ad4dd7a5e76d' // <-- this is Andy Lee's API key
+      token: '06e92cde99f28431e993b8bafc67ad4dd7a5e76d', // <-- this is Andy Lee's API key
+      webhooks: {
+        username: '913f91895a8323e4184ed825034dd40c',
+        password: '58c09aecba8c7c4bf892760d56e2bf69'
+      }
     }
   }
 }
