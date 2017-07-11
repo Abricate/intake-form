@@ -56,8 +56,7 @@ function validate(jobRequest) {
   let requiredFields = [
     '_materialCategory',
     'quantity',
-    'dueDate',
-    'material'
+    'dueDate'
   ];
 
   if(selectedMaterialCategory && selectedMaterialCategory.custom) {
@@ -73,6 +72,7 @@ function validate(jobRequest) {
   
   if(hasColor) requiredFields.push('color');
   if(hasThickness) requiredFields.push('materialThickness');
+  if(!(selectedMaterialCategory && selectedMaterialCategory.custom)) requiredFields.push('material');
   
   const missingProps = requiredFields.map( field => 
     !jobRequest.props[field] ? { field, error: true } : null
