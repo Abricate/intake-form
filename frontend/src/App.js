@@ -1,12 +1,9 @@
 import React, { Component } from 'react';
 import {
   BrowserRouter as Router,
-  Route,
-  Prompt,
-  Link,
-  withRouter
+  Route
 } from 'react-router-dom';
-import { connect, Provider } from 'react-redux';
+import { Provider } from 'react-redux';
 import { Container, Collapse, Navbar, NavbarBrand, Nav, NavItem, NavLink } from 'reactstrap';
 
 import 'bootstrap/dist/css/bootstrap.css';
@@ -25,13 +22,6 @@ import Success from './components/Success';
 
 import Footer from './components/Footer';
 
-const footerStyle = {
-  marginTop: '100px',
-  width: '100%',
-  height: '420px',
-  border: '0'
-}
-
 window.onbeforeunload = function(e) {
   const state = store.getState();
   if(!state.jobRequest.empty || state.cart.length !== 0) {
@@ -49,7 +39,7 @@ class App extends Component {
             <div>
               <Container>
                 <Navbar toggleable>
-                  <NavbarBrand href="http://www.abricate.com/"><img src={AbricateLogo} /></NavbarBrand>
+                  <NavbarBrand href="http://www.abricate.com/"><img alt="Abricate (logo)" src={AbricateLogo} /></NavbarBrand>
 
                   <Collapse isOpen={true} navbar>
                     <Nav className="ml-auto" navbar>

@@ -31,8 +31,7 @@ import { scrollToFirstFormElementWithError } from './util';
 
 import {
   addToCart,
-  setJobRequest,
-  setJobRequestError,
+  setJobRequest
 } from '../../actions';
 
 import * as MaterialsConfig from '../../data/materials';
@@ -112,22 +111,22 @@ class Step2Form extends React.Component {
   }
   
   render() {
-    const { jobRequest, setValue, setValueRaw, addToCart, history, errors } = this.props;
+    const { jobRequest, setValue, setValueRaw, errors } = this.props;
+
+    const values = jobRequest.props;
 
     const decr = field => () => {
-      const value = parseInt(values[field]) - 1;
-      setValueRaw(field, value < 1 ? 1 : value)
+      const value = parseInt(values[field], 10) - 1;
+      setValueRaw(field, value < 1 ? 1 : value);
     };
 
     const incr = field => () => {
-      setValueRaw(field, parseInt(values[field]) + 1)
+      setValueRaw(field, parseInt(values[field], 10) + 1);
     };
-
-    const values = jobRequest.props;
     
     const dueDateChanged = moment => {
       let dueDate = moment;
-      if(moment.format != undefined) {
+      if(moment.format !== undefined) {
         dueDate = dueDate.format('YYYY-MM-DD');
       }
       setValueRaw('dueDate', dueDate);
@@ -231,14 +230,6 @@ class Step2Form extends React.Component {
   }
 }
 
-function validateAndDispatch(jobRequest, dispatch) {
-  const errors = validate(jobRequest);
-  if(errors.length > 0) {
-    errors.forEach( error => dispatch(setJobRequestError(error)) );
-  }
-  return errors;
-}
-
 function mapStateToProps(state) {
   const jobRequest = state.jobRequest;
   return {
@@ -255,7 +246,7 @@ function mapDispatchToProps(dispatch, ownProps) {
     setValueRaw: (field, value) => dispatch(setJobRequest({field, value})),
     addToCart: jobRequest => {
       const errors = validate(jobRequest);
-      if(errors.length == 0) {
+      if(errors.length === 0) {
         dispatch(addToCart(jobRequest));
         history.push('/checkout');
       }

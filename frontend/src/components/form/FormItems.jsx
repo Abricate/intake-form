@@ -2,17 +2,11 @@ import React from 'react';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import {
-  Button,
-  Col,
-  Form,
   FormFeedback,
   FormGroup,
   FormText,
   Input,
-  InputGroup,
-  InputGroupAddon,
   Label,
-  Row,
 } from 'reactstrap';
 
 function mkOptions(items) {
@@ -20,6 +14,32 @@ function mkOptions(items) {
     <option key={item}>{item}</option>
   ));
 }
+
+export const FormItem = ({ children, label, sublabel, name, type, options, ...rest }, { values, validationErrors, setValue, formGroup = true }) => {
+  const labelForError = label || sublabel;
+  const errorText = validationErrors[name] ? (validationErrors[name] !== true ? validationErrors[name] : `${labelForError} is required`) : null;
+
+  const labelElem = (
+    <div>
+      <Label for={name} className="form-control-label">{label}</Label>
+      <Input type={type} name={name} id={name} state={validationErrors[name] ? 'danger' : null} onChange={setValue} value={values[name] || ''} {...rest}>
+        {options !== undefined ? mkOptions(options) : null}
+      </Input>
+      {errorText ? <FormFeedback>{errorText}</FormFeedback> : (sublabel ? <FormText color="muted">{sublabel}</FormText> : null)}
+      {children}
+    </div>
+  );
+
+  if(formGroup) {
+    return (
+      <FormGroup color={validationErrors[name] ? "danger" : null}>
+        {labelElem}
+      </FormGroup>
+    );
+  } else {
+    return labelElem;
+  }
+};
 
 export class FormItems extends React.Component {
   getChildContext() {
@@ -81,32 +101,6 @@ export const FormItemGroup = ({ children }, { values, validationErrors, setValue
       </FormItemContainer>
     </FormGroup>
   );
-};
-
-export const FormItem = ({ children, label, sublabel, name, type, options, ...rest }, { values, validationErrors, setValue, formGroup = true }) => {
-  const labelForError = label || sublabel;
-  const errorText = validationErrors[name] ? (validationErrors[name] !== true ? validationErrors[name] : `${labelForError} is required`) : null;
-
-  const labelElem = (
-    <div>
-      <Label for={name} className="form-control-label">{label}</Label>
-      <Input type={type} name={name} id={name} state={validationErrors[name] ? 'danger' : null} onChange={setValue} value={values[name] || ''} {...rest}>
-        {options !== undefined ? mkOptions(options) : null}
-      </Input>
-      {errorText ? <FormFeedback>{errorText}</FormFeedback> : (sublabel ? <FormText color="muted">{sublabel}</FormText> : null)}
-      {children}
-    </div>
-  );
-
-  if(formGroup) {
-    return (
-      <FormGroup color={validationErrors[name] ? "danger" : null}>
-        {labelElem}
-      </FormGroup>
-    );
-  } else {
-    return labelElem;
-  }
 };
 
 FormItems.childContextTypes = {
