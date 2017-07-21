@@ -9,9 +9,10 @@
     "test": "mocha --compilers js:babel-core/register backend/test/",
     "heroku-postbuild": "npm install --only=dev && npm install && npm run build && cd frontend/ && npm install --only=dev && npm install && npm run build",
     "db:migrate": "babel-node scripts/sequelize.js db:migrate",
+    "db:migrate:undo": "babel-node scripts/sequelize.js db:migrate:undo",
     "seed:create": "babel-node scripts/sequelize.js seed:create",
     "db:seed:all": "babel-node scripts/sequelize.js db:seed:all",
-    "migration:create": "babel-node scripts/sequelize.js migration:create"
+    "migration:create": "babel-node scripts/sequelize.js migration:create --name"
   },
   "engines": {
     "node": "7.10.x"
@@ -25,6 +26,7 @@
     "body-parser": "~1.17.1",
     "box-node-sdk": "^1.3.0",
     "cookie-parser": "~1.4.3",
+    "cookie-session": "^2.0.0-beta.2",
     "crypto-js": "^3.1.9-1",
     "csurf": "^1.9.0",
     "debug": "~2.6.3",
@@ -38,6 +40,8 @@
     "mime-types": "^2.1.15",
     "morgan": "~1.8.1",
     "multer": "^1.3.0",
+    "passport": "^0.3.2",
+    "passport-google-oauth": "^1.0.0",
     "pg": "^6.1.5",
     "pg-hstore": "^2.3.2",
     "pipedrive": "^3.0.1",

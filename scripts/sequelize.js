@@ -14,7 +14,6 @@ if(db && db.dialect && db.host && db.database) {
   console.log("no database config found", db, config);
   process.exit(1);
 }
-
   
 const [,, task, ...rest] = process.argv;
 const commandLine = `sequelize ${task} --url "${dbUrl}" ${rest.join(' ')}`;

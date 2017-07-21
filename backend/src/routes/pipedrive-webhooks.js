@@ -1,10 +1,14 @@
+import crypto from 'crypto';
 import expressBasicAuth from 'express-basic-auth';
 
+import { promisify } from '../util';
 import config from '../config';
 import customFields from '../pipedrive-custom-fields';
-import { Job } from '../db';
+import { Job, JobFile, InvoiceLineItem } from '../db';
 import diff from '../util';
 import pipedrive from '../clients/pipedrive';
+
+const randomBytes = promisify(crypto.randomBytes);
 
 const router = require('express-promise-router')();
 
@@ -16,7 +20,11 @@ if(config.pipedrive.webooks) {
   router.use(expressBasicAuth({ users }));
 }
 
-const pipedriveToDatabaseMapping = {
+const pipedriveToInvoiceLineItemMapping = {
+  'Unit Price': 'unitPrice'
+};
+
+const pipedriveToJobMapping = {
   'Material': 'material',
   'Color': 'color',
   'Material Thickness': 'materialThickness',
@@ -25,7 +33,7 @@ const pipedriveToDatabaseMapping = {
   'Due Date': 'dueDate',
 };
 
-const pipedriveToDatabasePropsMapping = {
+const pipedriveToJobPropsMapping = {
   'CM: Catalog Link': 'customMaterial.catalogLink',
   'CM: Product Name': 'customMaterial.productName',
   'CM: Product ID': 'customMaterial.productId',
@@ -56,14 +64,16 @@ async function getStageName(id) {
 export class PipedriveWebhooks {
   constructor({ getJobForPipedriveDealId, getStageName, pipedriveCustomFields }) {
     this.getJobForPipedriveDealId = getJobForPipedriveDealId;
-    this.getStateName = getStageName;
+    this.getStageName = getStageName;
     this.pipedriveCustomFields = pipedriveCustomFields;
+
+    this.middleware = this.middleware.bind(this);
   }
 
 
   async handlePipedriveDealUpdate(body) {
     const job = await this.getJobForPipedriveDealId(body.meta.id);
-    const customFields = await this.pipedriveCustomFields();
+    const customFields = await this.pipedriveCustomFields;
     if(job) {
       const updatedFields = diff(body.previous, body.current);
 
@@ -73,36 +83,49 @@ export class PipedriveWebhooks {
 
       const jobFieldsToUpdate = _.omit(
         _.mapKeys(updatedFieldsMapped, (value, key) =>
-          pipedriveToDatabaseMapping.hasOwnProperty(key) ? pipedriveToDatabaseMapping[key] : null
+          pipedriveToJobMapping.hasOwnProperty(key) ? pipedriveToJobMapping[key] : null
         ), null
       );
 
       const jobPropsToUpdate = _.omit(
         _.mapKeys(updatedFieldsMapped, (value, key) =>
-          pipedriveToDatabasePropsMapping.hasOwnProperty(key) ? pipedriveToDatabaseMapping[key] : null
+          pipedriveToJobPropsMapping.hasOwnProperty(key) ? pipedriveToJobPropsMapping[key] : null
         ), null
       );
 
       const props = job.propsParsed();
 
+      let state = {};
+      if(updatedFields.stage_id != undefined) {
+        state = { state: this.getStageName(updatedFields.stage_id) };
+      }
+                                             
       await job.update({
         ...jobFieldsToUpdate,
-        props: JSON.stringify({...props, jobPropsToUpdate})
+        props: JSON.stringify({...props, jobPropsToUpdate}),
+        ...state
       });
 
-      if(updatedFieldsMapped.hasOwnProperty('stage_id')) {
-        const stageName = this.getStageName(updatedFieldsMapped.stage_id);
-
-        if(stageName === ReadyForInvoice) {
-          
-          InvoiceLineItem.find({where: {jobId: 
-          // if exists, update InvoiceLineItem for this Job
-          // else:
-          //   create InvoiceLineItem for this Job
-          //   if non-published Invoice already attached to this Order, attach line item to that Invoice
-          //   else, create a new Invoice and attach to this Order
-          // 
+      const invoiceLineItemFieldsToUpdate = _.omit(
+        _.mapKeys(updatedFieldsMapped, (value, key) =>
+          pipedriveToInvoiceLineItemMapping.hasOwnProperty(key) ? pipedriveToInvoiceLineItemMapping[key] : null
+        ), null
+      );
+      
+      const [ invoiceLineItem, created ] = await InvoiceLineItem.findOrCreate({
+        where: { jobId: job.id },
+        defaults: {
+          props: JSON.stringify({ job }),
+          quantity: job.quantity,
+          ...invoiceLineItemFieldsToUpdate
         }
+      });
+
+      if(!created) {
+        await invoiceLineItem.update({
+          quantity: job.quantity,
+          ...invoiceLineItemFieldsToUpdate
+        });
       }
     }
   }
@@ -111,18 +134,18 @@ export class PipedriveWebhooks {
     const body = req.body;
     
     if(body.event === 'updated.deal') {
-      await handlePipedriveDealUpdate(body);
+      await this.handlePipedriveDealUpdate(body);
       res.send('ok');
     }
   }
 }
 
 const { middleware } = new PipedriveWebhooks({
-  getJobForPipedriveDealId: id => Job.find({where: {pipedriveDealId: id.toString()}}),
+  getJobForPipedriveDealId: id => Job.find({where: {pipedriveDealId: id.toString()}, include: [ JobFile ]}),
   getStageName,
   pipedriveCustomFields: customFields
 });
 
 router.post('/', middleware);
 
-export default router;
+module.exports = router;

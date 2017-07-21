@@ -3,6 +3,7 @@ import _ from 'lodash';
 import db, { Order, BoxFile, User, PipedrivePerson, Job, createOrder } from '../db';
 import pipedrive from '../clients/pipedrive';
 import box from '../clients/box';
+import customFields from '../pipedrive-custom-fields';
 
 const router = require('express-promise-router')();
 
@@ -23,48 +24,9 @@ const createJob = order => async job => {
   return {job: dbJob, boxFiles};
 };
 
-const customFields = {
-  'Files': 'text',
-  'Material': 'varchar',
-  'Color': 'varchar',
-  'Material Thickness': 'varchar',
-  'Comments': 'text',
-  'Quantity': 'double',
-  'Due Date': 'date',
-  'Shipping Address': 'text',
-  'CM: Catalog Link': 'varchar',
-  'CM: Product Name': 'varchar',
-  'CM: Product ID': 'varchar',
-  'CM: Dimensions': 'varchar',
-  'CM: Price': 'varchar',
-  'CM: MSDS Link': 'varchar'
-};
-
-const customFieldKeys = pipedrive.DealFields.getAll().then( fields => {
-  const pairs = fields.filter( field =>
-    customFields.hasOwnProperty(field.name)
-  ).map( field =>
-    [field.name, field.key]
-  );
-
-  const existingFields = _.fromPairs(pairs);
-
-  const missingFieldNames = _.difference(_.keys(customFields), _.keys(existingFields));
-
-  return Promise.all(
-    missingFieldNames.map(name => {
-      const field_type = customFields[name];
-      return pipedrive.DealFields.add({ name, field_type }).then( field => [name, field.key] );
-    })
-  ).then(_.fromPairs).then( missingFields => ({
-    ...existingFields,
-    ...missingFields
-  }));
-})
-
 async function addDeal(_deal) {
-  const fields = await customFieldKeys;
-
+  const fields = await customFields;
+  console.log("fields", fields);
   const { custom, ...deal } = _deal;
 
   /*

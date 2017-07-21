@@ -24,6 +24,21 @@ export const User = sequelize.define('user', {
   country: Sequelize.STRING
 });
 
+export const Admin = sequelize.define('admin', {
+  email: {type: Sequelize.STRING, unique: true},
+  name: Sequelize.STRING,
+  email: Sequelize.STRING,
+  googleId: Sequelize.STRING,
+  active: Sequelize.BOOLEAN,
+  lastLogin: Sequelize.DATE
+}, {
+  instanceMethods: {
+    isAdmin() {
+      return true;
+    }
+  }
+});
+
 export const PipedrivePerson = sequelize.define('pipedrive_person', {
   personId: Sequelize.STRING
 });
@@ -39,7 +54,7 @@ export const Job = sequelize.define('job', {
   pipedriveDealId: Sequelize.STRING,
 },{
   instanceMethods: {
-    propsParsed: function() {
+    propsParsed() {
       return JSON.parse(this.props);
     }
   }
@@ -78,8 +93,7 @@ export const InvoiceLineItem = sequelize.define('invoice_line_item', {
   props: Sequelize.TEXT,
   description: Sequelize.STRING,
   quantity: Sequelize.INTEGER,
-  unitPrice: Sequelize.INTEGER,
-  total: Sequelize.INTEGER
+  unitPrice: Sequelize.INTEGER
 });
 
 Job.belongsToMany(BoxFile, { as: 'Files', through: {model: JobFiles, scope: {type: 'BoxFile'}} });
