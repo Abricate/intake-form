@@ -39,6 +39,8 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
         
       # run tests!
-      - run: npm run test
-        environment:
-          BOX_PRIVATE_KEY: bogus-key
+      - run:
+          name: tests
+          command: npm run test
+          environment:
+            BOX_PRIVATE_KEY: bogus-key
