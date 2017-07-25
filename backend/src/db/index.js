@@ -52,6 +52,7 @@ export const Job = sequelize.define('job', {
   quantity: Sequelize.INTEGER,
   dueDate: Sequelize.DATE,
   pipedriveDealId: Sequelize.STRING,
+  state: Sequelize.STRING
 },{
   instanceMethods: {
     propsParsed() {
@@ -86,14 +87,15 @@ export const Invoice = sequelize.define('invoice', {
   shippingAddress: Sequelize.JSONB,
   billingAddress: Sequelize.JSONB,
   shippingCost: Sequelize.INTEGER,
-  published: Sequelize.BOOLEAN
+  published: Sequelize.BOOLEAN,
+  paid: Sequelize.BOOLEAN
 });
 
 export const InvoiceLineItem = sequelize.define('invoice_line_item', {
   props: Sequelize.TEXT,
   description: Sequelize.STRING,
   quantity: Sequelize.INTEGER,
-  unitPrice: Sequelize.INTEGER
+  unitPrice: Sequelize.DECIMAL
 });
 
 Job.belongsToMany(BoxFile, { as: 'Files', through: {model: JobFiles, scope: {type: 'BoxFile'}} });
@@ -103,6 +105,7 @@ PipedrivePerson.belongsTo(User);
 BoxFile.belongsTo(Job);
 Job.belongsTo(Order);
 Job.hasMany(BoxFile);
+Job.hasMany(InvoiceLineItem);
 Order.belongsTo(User);
 Order.hasMany(Job);
 User.hasMany(Order);
@@ -155,5 +158,14 @@ export async function createBoxFile(boxFile) {
   throw Error('failed to create boxFile with unique identifier');
 }
 
-
-sequelize.sync();
+if(process.env.NODE_ENV !== 'test') {
+  sequelize.sync().catch( error => {
+    console.log("\n\n\n\n");
+    console.log("======================================================================================");
+    console.log("= Is the database running?                                                           =");
+    console.log("======================================================================================");
+    console.log("\n\n\n\n");
+    console.error(error);
+    process.exit(1);
+  })
+}

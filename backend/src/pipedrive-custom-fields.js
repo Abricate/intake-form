@@ -20,9 +20,10 @@ const customFields = {
   'Unit Price': 'monetary'
 };
 
+/*
+* returns an object {<pipedrive field identifier>: <field name>}
+*/
 const customFieldKeys = (getDealFields = pipedrive.DealFields.getAll) => {
-  console.log("CustomFieldKeys");
-
   return getDealFields().then( fields => {
     const pairs = fields.filter( field =>
       customFields.hasOwnProperty(field.name)
@@ -48,9 +49,7 @@ const customFieldKeys = (getDealFields = pipedrive.DealFields.getAll) => {
 
 let result = undefined;
 
-export default customFieldKeys();
-
-/*() => {
+export default () => {
   if(result !== undefined) {
     return result;
   } else {
@@ -58,4 +57,3 @@ export default customFieldKeys();
     return result;
   }
 };
-*/

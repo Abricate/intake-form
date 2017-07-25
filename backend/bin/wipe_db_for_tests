@@ -1,0 +1,11 @@
+#!/usr/bin/env babel-node
+
+if(process.env.NODE_ENV !== 'test') {
+  console.error("Only usable in test env!");
+  process.exit(1);
+}
+
+var db = require('../src/db');
+
+// wipe db
+db.default.sync({force: true}).then( () => process.exit(0) )

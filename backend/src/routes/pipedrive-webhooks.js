@@ -1,27 +1,19 @@
 import crypto from 'crypto';
 import expressBasicAuth from 'express-basic-auth';
+import expressPromiseRouter from 'express-promise-router';
+import _ from 'lodash';
 
 import { promisify } from '../util';
 import config from '../config';
 import customFields from '../pipedrive-custom-fields';
 import { Job, JobFile, InvoiceLineItem } from '../db';
-import diff from '../util';
+import { diff } from '../util';
 import pipedrive from '../clients/pipedrive';
 
 const randomBytes = promisify(crypto.randomBytes);
 
-const router = require('express-promise-router')();
-
-if(config.pipedrive.webooks) {
-  const users = {
-    [config.pipedrive.webhooks.username]: config.pipedrive.webhooks.password
-  };
-
-  router.use(expressBasicAuth({ users }));
-}
-
 const pipedriveToInvoiceLineItemMapping = {
-  'Unit Price': 'unitPrice'
+  'Unit Price': { columnName: 'unitPrice', transform: _.identity }
 };
 
 const pipedriveToJobMapping = {
@@ -62,7 +54,11 @@ async function getStageName(id) {
 }
 
 export class PipedriveWebhooks {
-  constructor({ getJobForPipedriveDealId, getStageName, pipedriveCustomFields }) {
+  constructor({
+    getJobForPipedriveDealId = id => Job.find({where: {pipedriveDealId: id.toString()}}),
+    getStageName = getStageName,
+    pipedriveCustomFields = customFields()
+  }) {
     this.getJobForPipedriveDealId = getJobForPipedriveDealId;
     this.getStageName = getStageName;
     this.pipedriveCustomFields = pipedriveCustomFields;
@@ -99,18 +95,24 @@ export class PipedriveWebhooks {
       if(updatedFields.stage_id != undefined) {
         state = { state: this.getStageName(updatedFields.stage_id) };
       }
-                                             
+      console.log({updatedFields});
+      
       await job.update({
         ...jobFieldsToUpdate,
-        props: JSON.stringify({...props, jobPropsToUpdate}),
+        props: JSON.stringify({...props, ...jobPropsToUpdate}),
         ...state
       });
 
-      const invoiceLineItemFieldsToUpdate = _.omit(
-        _.mapKeys(updatedFieldsMapped, (value, key) =>
-          pipedriveToInvoiceLineItemMapping.hasOwnProperty(key) ? pipedriveToInvoiceLineItemMapping[key] : null
-        ), null
-      );
+      const invoiceLineItemFieldsToUpdate =
+        _.chain(updatedFieldsMapped)
+         .toPairs()
+         .filter( ([ key ]) => pipedriveToInvoiceLineItemMapping.hasOwnProperty(key) )
+         .map( ([key, value]) => {
+             const { columnName, transform } = pipedriveToInvoiceLineItemMapping[key];
+           return [ columnName, transform(value) ];
+         })
+         .fromPairs()
+         .value();
       
       const [ invoiceLineItem, created ] = await InvoiceLineItem.findOrCreate({
         where: { jobId: job.id },
@@ -133,19 +135,27 @@ export class PipedriveWebhooks {
   async middleware(req, res, next) {
     const body = req.body;
     
-    if(body.event === 'updated.deal') {
+    if(body.meta.action === 'updated' && body.meta.object === 'deal') {
       await this.handlePipedriveDealUpdate(body);
       res.send('ok');
     }
   }
 }
 
-const { middleware } = new PipedriveWebhooks({
-  getJobForPipedriveDealId: id => Job.find({where: {pipedriveDealId: id.toString()}, include: [ JobFile ]}),
-  getStageName,
-  pipedriveCustomFields: customFields
-});
+export default () => {
+  const router = expressPromiseRouter();
 
-router.post('/', middleware);
+  if(config.pipedrive.webooks) {
+    const users = {
+      [config.pipedrive.webhooks.username]: config.pipedrive.webhooks.password
+    };
 
-module.exports = router;
+    router.use(expressBasicAuth({ users }));
+  }
+  
+  const { middleware } = new PipedriveWebhooks({});
+
+  router.post('/', middleware);
+  
+  return router;
+};

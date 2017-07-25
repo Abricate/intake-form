@@ -25,7 +25,7 @@ const createJob = order => async job => {
 };
 
 async function addDeal(_deal) {
-  const fields = await customFields;
+  const fields = await customFields();
   console.log("fields", fields);
   const { custom, ...deal } = _deal;
 

@@ -32,7 +32,7 @@ var jobs = require('./routes/jobs');
 var auth = require('./routes/auth');
 var adminJobs = require('./routes/admin/jobs');
 var user = require('./routes/user');
-var pipedriveWebhooks = require('./routes/pipedrive-webhooks');
+var pipedriveWebhooks = require('./routes/pipedrive-webhooks').default;
 
 app.use(cookieParser());
 
@@ -103,7 +103,7 @@ app.use('/jobs', jobs);
 app.use('/auth', auth);
 app.use('/user', user);
 app.use('/admin/jobs', adminJobs);
-app.use('/webhook/pipedrive', pipedriveWebhooks);
+app.use('/webhook/pipedrive', pipedriveWebhooks());
 
 // all other routes just return index.html
 app.get('*', indexHtml);

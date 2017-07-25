@@ -15,6 +15,14 @@ const config = {
       },
       enterpriseID: '611963'
     }
+  },
+  test: {
+    db: {
+      database: 'abricate-test',
+      host: 'localhost',
+      port: 5433,
+      dialect: 'postgres',
+    },
   },    
   development: {
     db: {
