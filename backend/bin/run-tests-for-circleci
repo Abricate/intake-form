@@ -3,5 +3,9 @@
 set -e
 
 NODE_ENV=test backend/bin/wipe_db_for_tests
-export BOX_PRIVATE_KEY=bogus-key
-NODE_ENV=test mocha --reporter mocha-junit-reporter --reporter-options mochaFile=/tmp/test-results/junit/test-results.xml --compilers js:babel-core/register backend/test/
+
+BOX_PRIVATE_KEY=bogus-key NODE_ENV=test mocha \
+               --reporter mocha-junit-reporter \
+               --reporter-options mochaFile=/tmp/test-results/junit/test-results.xml \
+               --compilers js:babel-core/register \
+               backend/test/
