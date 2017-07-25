@@ -40,5 +40,5 @@ jobs:
         
       # run tests!
       - run: npm run test
-
-
+        environment:
+          BOX_PRIVATE_KEY: bogus-key
