@@ -41,6 +41,7 @@ jobs:
       # run tests!
       - run:
           name: tests
-          command: npm run test
-          environment:
-            BOX_PRIVATE_KEY: bogus-key
+          command: npm run test-for-circleci
+
+      - store_test_results:
+          path: /tmp/test-results

@@ -7,6 +7,7 @@
     "console": "babel-node",
     "build": "node_modules/.bin/babel backend/src/ -d backend/dist/ && cp -r backend/src/views backend/dist/",
     "test": "NODE_ENV=test backend/bin/wipe_db_for_tests && NODE_ENV=test mocha --compilers js:babel-core/register backend/test/",
+    "test-circleci": "backend/bin/run-tests-for-circleci",
     "test-no-wipe-db": "NODE_ENV=test mocha --compilers js:babel-core/register backend/test/",
     "heroku-postbuild": "npm install --only=dev && npm install && npm run build && cd frontend/ && npm install --only=dev && npm install && npm run build",
     "db:migrate": "babel-node scripts/sequelize.js db:migrate",
@@ -67,6 +68,7 @@
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "longjohn": "^0.2.12",
-    "mocha": "^3.4.2"
+    "mocha": "^3.4.2",
+    "mocha-junit-reporter": "^1.13.0"
   }
 }
