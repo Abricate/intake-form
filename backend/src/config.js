@@ -20,7 +20,7 @@ const config = {
     db: {
       database: 'abricate-test',
       host: 'localhost',
-      port: 5433,
+      port: process.env.DB_PORT || 5433,
       dialect: 'postgres',
     },
   },    

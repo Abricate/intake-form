@@ -16,7 +16,6 @@ jobs:
         environment:
           POSTGRES_USER: ubuntu
           POSTGRES_DB: abricate-test
-          POSTGRES_PORT: 5433
           POSTGRES_PASSWORD: ""
 
     working_directory: ~/repo

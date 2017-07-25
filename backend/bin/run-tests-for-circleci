@@ -4,6 +4,7 @@ set -e
 
 export BOX_PRIVATE_KEY=bogus-key
 export NODE_ENV=test
+export DB_PORT=5432
 
 backend/bin/wipe_db_for_tests
 
