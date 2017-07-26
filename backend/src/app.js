@@ -3,7 +3,10 @@ var app = express();
 var Raven = require('raven');
 
 if(app.settings.env !== 'development') {
-  Raven.config('https://e2402d5636474781a5d216e185bfc12b:60bf73b5ca8446c592ade4fb0630b08c@sentry.io/175110').install();
+  Raven.config('https://e2402d5636474781a5d216e185bfc12b:60bf73b5ca8446c592ade4fb0630b08c@sentry.io/175110', {
+    release: process.env.HEROKU_RELEASE_VERSION,
+    environment: process.env.HEROKU_APP_NAME
+  }).install();
   // see https://docs.sentry.io/clients/node/integrations/express/
   // The request handler must be the first middleware on the app
   app.use(Raven.requestHandler());
