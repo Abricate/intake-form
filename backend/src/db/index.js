@@ -24,6 +24,21 @@ export const User = sequelize.define('user', {
   country: Sequelize.STRING
 });
 
+export const Admin = sequelize.define('admin', {
+  email: {type: Sequelize.STRING, unique: true},
+  name: Sequelize.STRING,
+  email: Sequelize.STRING,
+  googleId: Sequelize.STRING,
+  active: Sequelize.BOOLEAN,
+  lastLogin: Sequelize.DATE
+}, {
+  instanceMethods: {
+    isAdmin() {
+      return true;
+    }
+  }
+});
+
 export const PipedrivePerson = sequelize.define('pipedrive_person', {
   personId: Sequelize.STRING
 });
@@ -37,9 +52,10 @@ export const Job = sequelize.define('job', {
   quantity: Sequelize.INTEGER,
   dueDate: Sequelize.DATE,
   pipedriveDealId: Sequelize.STRING,
+  state: Sequelize.STRING
 },{
   instanceMethods: {
-    propsParsed: function() {
+    propsParsed() {
       return JSON.parse(this.props);
     }
   }
@@ -66,6 +82,22 @@ export const BoxFile = sequelize.define('box_file', {
   downloadUrl: Sequelize.TEXT  
 });
 
+export const Invoice = sequelize.define('invoice', {
+  identifier: {type: Sequelize.STRING(16), unique: true},
+  shippingAddress: Sequelize.JSONB,
+  billingAddress: Sequelize.JSONB,
+  shippingCost: Sequelize.INTEGER,
+  published: Sequelize.BOOLEAN,
+  paid: Sequelize.BOOLEAN
+});
+
+export const InvoiceLineItem = sequelize.define('invoice_line_item', {
+  props: Sequelize.TEXT,
+  description: Sequelize.STRING,
+  quantity: Sequelize.INTEGER,
+  unitPrice: Sequelize.DECIMAL
+});
+
 Job.belongsToMany(BoxFile, { as: 'Files', through: {model: JobFiles, scope: {type: 'BoxFile'}} });
 BoxFile.belongsToMany(Job, { as: 'Jobs', through: {model: JobFiles, scope: {type: 'BoxFile'}} });
 User.hasOne(PipedrivePerson);
@@ -73,11 +105,15 @@ PipedrivePerson.belongsTo(User);
 BoxFile.belongsTo(Job);
 Job.belongsTo(Order);
 Job.hasMany(BoxFile);
+Job.hasMany(InvoiceLineItem);
 Order.belongsTo(User);
 Order.hasMany(Job);
 User.hasMany(Order);
 ContactInfo.belongsTo(Order);
 Order.hasOne(ContactInfo, {as: 'ContactInfo'});
+Invoice.belongsTo(Order);
+InvoiceLineItem.belongsTo(Invoice);
+InvoiceLineItem.belongsTo(Job);
 
 export async function createOrder(order) {
   let tries = 100;
@@ -122,5 +158,14 @@ export async function createBoxFile(boxFile) {
   throw Error('failed to create boxFile with unique identifier');
 }
 
-
-sequelize.sync();
+if(process.env.NODE_ENV !== 'test') {
+  sequelize.sync().catch( error => {
+    console.log("\n\n\n\n");
+    console.log("======================================================================================");
+    console.log("= Is the database running?                                                           =");
+    console.log("======================================================================================");
+    console.log("\n\n\n\n");
+    console.error(error);
+    process.exit(1);
+  })
+}

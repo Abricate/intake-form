@@ -2,7 +2,7 @@
 
 if [ ! -d db/ ]; then
     initdb db/
-    ( sleep 5 && createdb -p 5433 abricate && bin/sync_db ) &
+    ( sleep 5 && createdb -p 5433 abricate && createdb -p 5433 abricate-test && bin/sync_db ) &
 fi
 
 postgres -p 5433 -D db/

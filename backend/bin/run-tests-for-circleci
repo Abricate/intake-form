@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+export BOX_PRIVATE_KEY=bogus-key
+export NODE_ENV=test
+export DB_PORT=5432
+export DB_USER=ubuntu
+
+backend/bin/wipe_db_for_tests
+
+mocha \
+    --reporter mocha-junit-reporter \
+    --reporter-options mochaFile=/tmp/test-results/junit/test-results.xml \
+    --compilers js:babel-core/register \
+    backend/test/
