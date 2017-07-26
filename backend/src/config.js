@@ -23,6 +23,7 @@ const config = {
       username: process.env.DB_USER || undefined,
       port: process.env.DB_PORT || 5433,
       dialect: 'postgres',
+      logging: false
     },
   },    
   development: {

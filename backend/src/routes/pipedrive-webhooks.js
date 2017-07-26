@@ -16,16 +16,13 @@ const pipedriveToInvoiceLineItemMapping = {
   'Unit Price': { columnName: 'unitPrice', transform: _.identity }
 };
 
-const pipedriveToJobMapping = {
+const pipedriveToJobPropsMapping = {
   'Material': 'material',
   'Color': 'color',
   'Material Thickness': 'materialThickness',
   'Comments': 'comments',
   'Quantity': 'quantity',
   'Due Date': 'dueDate',
-};
-
-const pipedriveToJobPropsMapping = {
   'CM: Catalog Link': 'customMaterial.catalogLink',
   'CM: Product Name': 'customMaterial.productName',
   'CM: Product ID': 'customMaterial.productId',
@@ -33,8 +30,6 @@ const pipedriveToJobPropsMapping = {
   'CM: Price': 'customMaterial.price',
   'CM: MSDS Link': 'customMaterial.msdsLink'
 };
-
-const ReadyForInvoice = 'READY FOR INVOICE';
 
 let stageNames = {};
 async function getStageName(id) {
@@ -77,12 +72,6 @@ export class PipedriveWebhooks {
         customFields.hasOwnProperty(key) ? customFields[key] : key
       );
 
-      const jobFieldsToUpdate = _.omit(
-        _.mapKeys(updatedFieldsMapped, (value, key) =>
-          pipedriveToJobMapping.hasOwnProperty(key) ? pipedriveToJobMapping[key] : null
-        ), null
-      );
-
       const jobPropsToUpdate = _.omit(
         _.mapKeys(updatedFieldsMapped, (value, key) =>
           pipedriveToJobPropsMapping.hasOwnProperty(key) ? pipedriveToJobPropsMapping[key] : null
@@ -95,10 +84,8 @@ export class PipedriveWebhooks {
       if(updatedFields.stage_id != undefined) {
         state = { state: this.getStageName(updatedFields.stage_id) };
       }
-      console.log({updatedFields});
       
       await job.update({
-        ...jobFieldsToUpdate,
         props: JSON.stringify({...props, ...jobPropsToUpdate}),
         ...state
       });
