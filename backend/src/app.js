@@ -37,6 +37,12 @@ var adminJobs = require('./routes/admin/jobs');
 var user = require('./routes/user');
 var pipedriveWebhooks = require('./routes/pipedrive-webhooks').default;
 
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use('/webhook/pipedrive', pipedriveWebhooks());
+
 app.use(cookieParser());
 
 const indexHtml = (req, res, next) => {
@@ -72,9 +78,6 @@ app.set('view engine', 'ejs');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cookieSession({
@@ -106,7 +109,6 @@ app.use('/jobs', jobs);
 app.use('/auth', auth);
 app.use('/user', user);
 app.use('/admin/jobs', adminJobs);
-app.use('/webhook/pipedrive', pipedriveWebhooks());
 
 // all other routes just return index.html
 app.get('*', indexHtml);

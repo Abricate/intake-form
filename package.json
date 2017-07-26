@@ -12,13 +12,14 @@
     "heroku-postbuild": "npm install --only=dev && npm install && npm run build && cd frontend/ && npm install --only=dev && npm install && npm run build && cd ../admin-frontend/ && npm install --only=dev && npm install && npm run build",
     "db:migrate": "babel-node scripts/sequelize.js db:migrate",
     "db:migrate:undo": "babel-node scripts/sequelize.js db:migrate:undo",
+    "heroku:db:migrate": "heroku run -a intake-form-staging npm run db:migrate",
     "seed:create": "babel-node scripts/sequelize.js seed:create",
     "db:seed:all": "babel-node scripts/sequelize.js db:seed:all",
     "migration:create": "babel-node scripts/sequelize.js migration:create --name",
     "postgres": "nf start db"
   },
   "engines": {
-    "node": "7.10.x"
+    "node": "8.2.x"
   },
   "cacheDirectories": [
     "node_modules",
