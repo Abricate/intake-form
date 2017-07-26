@@ -10,7 +10,8 @@ import { diff } from '../util';
 import pipedrive from '../clients/pipedrive';
 
 const pipedriveToInvoiceLineItemMapping = {
-  'Unit Price': { columnName: 'unitPrice', transform: _.identity }
+  'Quantity': 'quantity',
+  'Unit Price': 'unitPrice'
 };
 
 const pipedriveToJobPropsMapping = {
@@ -65,9 +66,14 @@ export class PipedriveWebhooks {
     if(job) {
       const updatedFields = diff(body.previous, body.current);
 
-      const updatedFieldsMapped = _.mapKeys(updatedFields, (value, key) =>
-        customFields.hasOwnProperty(key) ? customFields[key] : key
-      );
+      const updatedFieldsMapped = _.mapKeys(updatedFields, (value, encodedKey) => {
+        const fieldName = _.findKey(customFields, x => encodedKey === x);
+        if(fieldName !== undefined) {
+          return fieldName;
+        } else {
+          return null;
+        }
+      });
 
       const jobPropsToUpdate = _.omit(
         _.mapKeys(updatedFieldsMapped, (value, key) =>
@@ -87,17 +93,12 @@ export class PipedriveWebhooks {
         ...state
       });
 
-      const invoiceLineItemFieldsToUpdate =
-        _.chain(updatedFieldsMapped)
-         .toPairs()
-         .filter( ([ key ]) => pipedriveToInvoiceLineItemMapping.hasOwnProperty(key) )
-         .map( ([key, value]) => {
-             const { columnName, transform } = pipedriveToInvoiceLineItemMapping[key];
-           return [ columnName, transform(value) ];
-         })
-         .fromPairs()
-         .value();
-      
+      const invoiceLineItemFieldsToUpdate = _.omit(
+        _.mapKeys(updatedFieldsMapped, (value, key) =>
+          pipedriveToInvoiceLineItemMapping.hasOwnProperty(key) ? pipedriveToInvoiceLineItemMapping[key] : null
+        ), null
+      );
+
       const [ invoiceLineItem, created ] = await InvoiceLineItem.findOrCreate({
         where: { jobId: job.id },
         defaults: {

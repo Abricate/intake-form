@@ -22,7 +22,7 @@ const customFieldNames = [
   'Unit Price'
 ];
 
-const customFields = _.chain(customFieldNames).map((fieldName, index) => [`customfield_${index}`, fieldName]).fromPairs().value();
+const customFields = _.chain(customFieldNames).map((fieldName, index) => [fieldName, `customfield_${index}`]).fromPairs().value();
 
 const stages = {
   1: 'FORM IN',
@@ -45,7 +45,7 @@ const pipedriveToJobPropsMapping = {
 };
 
 function objectKeysToCustomFieldNames(object) {
-  return _.mapKeys( object, (value, key) => _.findKey(customFields, fieldName => fieldName === key) );
+  return _.mapKeys( object, (value, key) => customFields[key] );
 }
 
 const pipedriveDealId = 'pipedrive-id-1';
@@ -127,6 +127,21 @@ describe('pipedrive-webhooks', function() {
       expect(job.invoice_line_items).to.have.lengthOf(1);
       const [ item ] = job.invoice_line_items;
       expect(item).to.have.property('unitPrice', '12.56');
+    });
+
+    it('should update existing invoice line item when quantity is changed', async function() {
+      await pipedriveWebhooks.handlePipedriveDealUpdate(createWebhookPayload({
+        currentDeal: {'Quantity': 10}
+      }));
+      
+      await pipedriveWebhooks.handlePipedriveDealUpdate(createWebhookPayload({
+        currentDeal: {'Quantity': 3}
+      }));
+
+      const job = await Job.findById(initialJob.id, {include: [ InvoiceLineItem ] });
+      expect(job.invoice_line_items).to.have.lengthOf(1);
+      const [ item ] = job.invoice_line_items;
+      expect(item).to.have.property('quantity', 3);
     });
 
     it('should update job state', async function() {
