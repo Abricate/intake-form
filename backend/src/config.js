@@ -66,7 +66,7 @@ const config = {
         "token_uri":"https://accounts.google.com/o/oauth2/token",
         "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
         "client_secret":"l1pDDDYJuL1Nm2eOPqMuYikv",
-        "redirect_uri": `https://${process.env.HOSTNAME}/login`
+        "redirect_uri": `https://${process.env.HOSTNAME}/auth/google/callback`
       }
     }
   }

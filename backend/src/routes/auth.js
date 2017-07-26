@@ -12,7 +12,7 @@ passport.use(
   new OAuth2Strategy({
     clientID: config.google.web.client_id,
     clientSecret: config.google.web.client_secret,
-    callbackURL: config.google.web.redirect_uris[0]
+    callbackURL: config.google.web.redirect_uri
   }, function(accessToken, refreshToken, profile, done) {
     const result = (async function() {
       const googleId = profile.id;
