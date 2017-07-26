@@ -25,7 +25,7 @@ const config = {
       dialect: 'postgres',
       logging: false
     },
-  },    
+  },
   development: {
     db: {
       database: 'abricate',

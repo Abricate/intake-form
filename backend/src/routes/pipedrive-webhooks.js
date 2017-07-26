@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import expressBasicAuth from 'express-basic-auth';
 import expressPromiseRouter from 'express-promise-router';
 import _ from 'lodash';
@@ -9,8 +8,6 @@ import customFields from '../pipedrive-custom-fields';
 import { Job, JobFile, InvoiceLineItem } from '../db';
 import { diff } from '../util';
 import pipedrive from '../clients/pipedrive';
-
-const randomBytes = promisify(crypto.randomBytes);
 
 const pipedriveToInvoiceLineItemMapping = {
   'Unit Price': { columnName: 'unitPrice', transform: _.identity }
