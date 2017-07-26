@@ -47,13 +47,6 @@ class Checkout extends React.Component {
   }
 
   render() {
-    const {
-      cart,
-
-      history,
-    } = this.props;
-    
-    
     return (
       <div>
         <h2>Checkout</h2>

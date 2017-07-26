@@ -28,10 +28,10 @@ const TestFiles = [{ filename: 'test', originalName: 'foo'}];
 function files(state = isDev ? TestFiles : [], action) {
   switch(action.type) {
     case ADD_FILES_TO_JOB_REQUEST:
-      return state.concat(action.files)
+      return state.concat(action.files);
 
     case REMOVE_FILE_FROM_JOB_REQUEST:
-      return _.without(state, action.file)
+      return _.without(state, action.file);
   }
 
   return state;

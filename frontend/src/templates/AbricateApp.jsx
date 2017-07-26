@@ -15,7 +15,7 @@ const AbricateApp = ({ showNavBar, showFooter, children }) => (
   <div>
     <Container>
       <Navbar toggleable>
-        <NavbarBrand href="http://www.abricate.com/"><img src={AbricateLogo} /></NavbarBrand>
+        <NavbarBrand href="http://www.abricate.com/"><img alt="Abricate (logo)" src={AbricateLogo} /></NavbarBrand>
 
         { showNavBar ? (
             <Collapse isOpen={true} navbar>

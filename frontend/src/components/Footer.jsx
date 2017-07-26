@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Col, Row, Input } from 'reactstrap';
+import { Button, Col, Row } from 'reactstrap';
 
 import AbricateLogo from '../img/abricate-full-logo-wht.png';
 
@@ -11,10 +11,10 @@ const Footer = () => (
   <Row>
     <Col>
       <div className="mb-3">
-        <img src={AbricateLogo} />
+        <img alt="Abricate (logo)" src={AbricateLogo} />
       </div>
       <div className="d-flex">
-        <img width="41" height="41" src={NsfLogo} />
+        <img alt="NSF" width="41" height="41" src={NsfLogo} />
         <p className="nsf-text">
           National Science Foundation<br/>
           2016 Grant Recipient
@@ -24,10 +24,10 @@ const Footer = () => (
     <Col>
       <h2>Get In Touch</h2>
       <dl>
-        <dd><img src={IconOffice} width="37" height="37" /> Address</dd>
+        <dd><img alt="" src={IconOffice} width="37" height="37" /> Address</dd>
         <dt>344 20th St, Oakland, CA 94612</dt>
-        <dd><img src={IconMail} width="37" height="37" /> Email Address</dd>
-        <dt><a mailto="make@abricate.com">make@abricate.com</a></dt>
+        <dd><img alt="" src={IconMail} width="37" height="37" /> Email Address</dd>
+        <dt><a href="mailto:make@abricate.com">make@abricate.com</a></dt>
       </dl>
       <p className="copyright">Copyright &copy; 2017 Abricate, Inc. All rights reserved.</p>
     </Col>
@@ -37,24 +37,26 @@ const Footer = () => (
           <h2>Email Newsletter</h2>
           <p className="lead">Sign up for news and events!</p>
           <table cellPadding={2} width="100%">
-            <tr>
-              <td>
-                <input placeholder="First" name="FNAME" />
-              </td>
-              <td>
-                <input type="text" placeholder="Last" name="LNAME" />
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2}>
-                <input type="email" placeholder="Email" name="EMAIL" />
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2}>
-                <Button type="submit" color="primary" name="subscribe">Submit</Button>
-              </td>
-            </tr>
+            <tbody>
+              <tr>
+                <td>
+                  <input placeholder="First" name="FNAME" />
+                </td>
+                <td>
+                  <input type="text" placeholder="Last" name="LNAME" />
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={2}>
+                  <input type="email" placeholder="Email" name="EMAIL" />
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={2}>
+                  <Button type="submit" color="primary" name="subscribe">Submit</Button>
+                </td>
+              </tr>
+            </tbody>
           </table>
         </form>
       </div>

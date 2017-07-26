@@ -7,7 +7,7 @@ import {
   Link,
   withRouter
 } from 'react-router-dom';
-import { connect, Provider } from 'react-redux';
+import { Provider } from 'react-redux';
 import { Container, Collapse, Navbar, NavbarBrand, Nav, NavItem, NavLink } from 'reactstrap';
 
 import 'bootstrap/dist/css/bootstrap.css';
@@ -27,13 +27,6 @@ import Success from './components/Success';
 
 import Invoice from './components/Invoice';
 import InvoicePayment from './components/InvoicePayment';
-
-const footerStyle = {
-  marginTop: '100px',
-  width: '100%',
-  height: '420px',
-  border: '0'
-}
 
 window.onbeforeunload = function(e) {
   const state = store.getState();

@@ -130,7 +130,7 @@ class Uploader extends React.Component {
           style={style.base}
           onDrop={this.onDrop}>
         {
-          allFiles.length == 0 ? (
+          allFiles.length === 0 ? (
             noFilesText
           ) : (
             <div>{uploadedFiles}{pendingFiles}</div>
