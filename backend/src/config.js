@@ -40,7 +40,7 @@ const config = {
       'jaredlux.com',
       'abricate.com'
     ],
-    google: {"web":{"client_id":"529243456287-3mh6e015btvgmnjqb1o3fpc1poq4qps9.apps.googleusercontent.com","project_id":"abricate-173804","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://accounts.google.com/o/oauth2/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"5kf58aSOWaWYTry8chmog_Zq","redirect_uris":["http://localhost:3001/auth/google/callback"],"javascript_origins":["http://localhost:3101"]}}
+    google: {"web":{"client_id":"529243456287-3mh6e015btvgmnjqb1o3fpc1poq4qps9.apps.googleusercontent.com","project_id":"abricate-173804","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://accounts.google.com/o/oauth2/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"5kf58aSOWaWYTry8chmog_Zq","redirect_uri":"http://localhost:3001/auth/google/callback","javascript_origins":["http://localhost:3101"]}}
   },
   production: {
     db: {
@@ -66,8 +66,7 @@ const config = {
         "token_uri":"https://accounts.google.com/o/oauth2/token",
         "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
         "client_secret":"l1pDDDYJuL1Nm2eOPqMuYikv",
-        "redirect_uris":["https://jobrequest.abricate.com/login"],
-        "javascript_origins":["https://jobrequest.abricate.com"]
+        "redirect_uri": `https://${process.env.HOSTNAME}/login`
       }
     }
   }
