@@ -30,7 +30,7 @@ const pipedriveToJobPropsMapping = {
 };
 
 let stageNames = {};
-async function pipedriveGetStageName(id) {
+export async function pipedriveGetStageName(id) {
   if(stageNames.hasOwnProperty(id)) {
     return stageNames[id];
   } else {
@@ -85,7 +85,7 @@ export class PipedriveWebhooks {
 
       let state = {};
       if(updatedFields.stage_id != undefined) {
-        state = { state: this.getStageName(updatedFields.stage_id) };
+        state = { state: await this.getStageName(updatedFields.stage_id) };
       }
       
       await job.update({

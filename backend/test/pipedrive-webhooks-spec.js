@@ -97,7 +97,7 @@ describe('pipedrive-webhooks', function() {
 
 
     pipedriveWebhooks = new PipedriveWebhooks({
-      getStageName: id => stages[id],
+      getStageName: async id => stages[id],
       pipedriveCustomFields: customFields
     });
   });
