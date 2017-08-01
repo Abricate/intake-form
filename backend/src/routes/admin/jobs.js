@@ -6,7 +6,7 @@ const router = require('express-promise-router')();
 router.use(mustBeAdmin);
 
 router.get('/ready-to-invoice', async function (req, res) {
-  const jobs = await Job.findAll({ where: { state: 'ready_to_invoice' }});
+  const jobs = await Job.findAll({ where: { state: 'ready_for_invoice' }});
   res.send({ jobs });
 });
 
