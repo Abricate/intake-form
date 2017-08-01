@@ -154,7 +154,12 @@ describe('pipedrive-webhooks', function() {
       expect(job).to.have.property('state', 'READY FOR INVOICE');
     });
 
-    describe('job props', function() {
+    it('should have a getStageName function', async function() {
+      pipedriveWebhooks = new PipedriveWebhooks({pipedriveCustomFields: null, getJobForPipedriveDealId: null});
+      expect(pipedriveWebhooks.getStageName).to.not.be.undefined;
+    });
+      
+      describe('job props', function() {
       _.forEach(pipedriveToJobPropsMapping, ([jobField, value], pipedriveField) => {
         it(`should update ${jobField}`, async function() {
           let job = await Job.findById(initialJob.id);

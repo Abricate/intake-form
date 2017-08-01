@@ -30,7 +30,7 @@ const pipedriveToJobPropsMapping = {
 };
 
 let stageNames = {};
-async function getStageName(id) {
+async function pipedriveGetStageName(id) {
   if(stageNames.hasOwnProperty(id)) {
     return stageNames[id];
   } else {
@@ -49,7 +49,7 @@ async function getStageName(id) {
 export class PipedriveWebhooks {
   constructor({
     getJobForPipedriveDealId = id => Job.find({where: {pipedriveDealId: id.toString()}}),
-    getStageName = getStageName,
+    getStageName = pipedriveGetStageName,
     pipedriveCustomFields = customFields()
   }) {
     this.getJobForPipedriveDealId = getJobForPipedriveDealId;
