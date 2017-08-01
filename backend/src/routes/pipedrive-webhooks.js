@@ -29,6 +29,20 @@ const pipedriveToJobPropsMapping = {
   'CM: MSDS Link': 'customMaterial.msdsLink'
 };
 
+const pipedriveStateMapping = {
+  'FORM IN': 'form_in',
+  'VERIFY FILES': 'verify_files',
+  'QUOTE JOB': 'quote_job',
+  'READY FOR INVOICE': 'ready_for_invoice',
+  'INVOICE SENT': 'invoice_sent',
+  'REVIEW FOR SHOP': 'review_for_shop',
+  'SENT TO SHOP': 'sent_to_shop',
+  'IN PRODUCTION': 'in_production',
+  'QC & DELIVERY': 'qc_and_delivery',
+  'CUSTOMER FOLLOWUP': 'custom_followup',
+  'SHOP PAID': 'shop_paid'
+};
+
 let stageNames = {};
 export async function pipedriveGetStageName(id) {
   if(stageNames.hasOwnProperty(id)) {
@@ -85,7 +99,14 @@ export class PipedriveWebhooks {
 
       let state = {};
       if(updatedFields.stage_id != undefined) {
-        state = { state: await this.getStageName(updatedFields.stage_id) };
+        const stageName = await this.getStageName(updatedFields.stage_id);
+        const stateName = pipedriveStateMapping[stageName];
+        
+        if(stageName != null && stateName == null) {
+          console.error('unknown state from Pipedrive webhook', { updatedFields, stageName, pipedriveStateMapping });
+        } else {
+          state = { state: stateName };
+        }
       }
       
       await job.update({

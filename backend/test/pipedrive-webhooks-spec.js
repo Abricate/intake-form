@@ -1,4 +1,6 @@
 import _ from 'lodash';
+import sinon from 'sinon';
+
 import { expect } from './helper';
 
 import { PipedriveWebhooks } from '../src/routes/pipedrive-webhooks';
@@ -26,7 +28,8 @@ const customFields = _.chain(customFieldNames).map((fieldName, index) => [fieldN
 
 const stages = {
   1: 'FORM IN',
-  2: 'READY FOR INVOICE'
+  2: 'READY FOR INVOICE',
+  3: 'FOOBAR BAZ'
 };
 
 const pipedriveToJobPropsMapping = {
@@ -151,7 +154,23 @@ describe('pipedrive-webhooks', function() {
         currentStage: 'READY FOR INVOICE'
       }));
       job = await Job.findById(initialJob.id);
-      expect(job).to.have.property('state', 'READY FOR INVOICE');
+      expect(job).to.have.property('state', 'ready_for_invoice');
+    });
+
+    it('should reject unknown job state', async function() {
+      let job = await Job.findById(initialJob.id);
+      expect(job).to.have.property('state', null);
+
+      const consoleErrorStub = sinon.stub(console, "error");
+      await pipedriveWebhooks.handlePipedriveDealUpdate(createWebhookPayload({
+        currentStage: 'FOOBAR BAZ'
+      }));
+      expect(consoleErrorStub.calledOnce).to.be.true;
+      expect(consoleErrorStub.calledWith(sinon.match(/unknown state from Pipedrive/)));
+      consoleErrorStub.restore();
+      
+      job = await Job.findById(initialJob.id);
+      expect(job).to.have.property('state', null);
     });
 
     it('should have a getStageName function', async function() {
