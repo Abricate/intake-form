@@ -30,9 +30,15 @@ class Invoicing extends Component {
   }
 
   toggleSelect(jobId) {
-    this.setState((prevState, props) => ({
-      selectedJobs: {...prevState.selectedJobs, [jobId]: !prevState.selectedJobs[jobId] }
-    }))
+    this.setState((prevState, props) => {
+      const selected = !prevState.selectedJobs[jobId];
+
+      if(selected) {
+        return {selectedJobs: {...prevState.selectedJobs, [jobId]: true}};
+      } else {
+        return {selectedJobs: _.omit(prevState.selectedJobs, jobId)};
+      }
+    });
   }
 
   handleCreateInvoice() {
@@ -48,23 +54,12 @@ class Invoicing extends Component {
         <Table striped>
           <thead>
             <tr>
-              <th>
-              </th>
-              <th>
-                Created At
-              </th>
-              <th>
-                Order
-              </th>
-              <th>
-                Customer
-              </th>
-              <th>
-                Material
-              </th>
-              <th>
-                Quantity
-              </th>
+              <th></th>
+              <th>Created At</th>
+              <th>Order</th>
+              <th>Customer</th>
+              <th>Material</th>
+              <th>Quantity</th>
             </tr>
           </thead>
           <tbody>

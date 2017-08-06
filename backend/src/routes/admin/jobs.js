@@ -1,18 +1,30 @@
 import { ContactInfo, Job, Order, User } from '../../db';
 import { mustBeAdmin } from './';
 import { badRequest } from '../../error';
+import zipcodes from 'zipcodes';
 
 const router = require('express-promise-router')();
 
 router.use(mustBeAdmin);
 
 function contactInfoToJson(contact_info) {
+  let city, state;
+  if(contact_info.zipcode != null) {
+    const result = zipcodes.lookup(contact_info.zipcode);
+    if(result) {
+      city = result['city'];
+      state = result['state'];
+    }
+  }
+  
   return {
     name: contact_info.name,
     address1: contact_info.address1,
     address2: contact_info.address2,
     zipcode: contact_info.zipcode,
     country: contact_info.country,
+    city,
+    state,
     email: contact_info.email,
     phoneNumber: contact_info.phoneNumber
   }

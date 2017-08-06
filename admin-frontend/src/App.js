@@ -37,7 +37,7 @@ class App extends Component {
           <Container>
             <Route exact path="/login" component={Login} />
             <Route exact path="/invoicing" component={Invoicing} />
-            <Route exact path="/invoicing/create/:jobIds" component={CreateInvoice} />
+            <Route path="/invoicing/create/:jobIds/:isPreview?" component={CreateInvoice} />
           </Container>
         </div>
       </Router>
