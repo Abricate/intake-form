@@ -38,6 +38,7 @@ function jobToJson(job) {
     orderIdentifier: job.order.orderIdentifier,
     state: job.state,
     quantity: props.quantity,
+    unitPrice: props.unitPrice,
     materialCategory: props._materialCategory,
     material: props.material,
     materialThickness: props.materialThickness,
@@ -69,7 +70,6 @@ router.get('/ready-for-invoice', async function (req, res) {
     include: [ { model: Order, include: [ ContactInfo ] } ],
     order: [ [ Order, 'createdAt' ], [ Order, 'orderIdentifier' ] ]
   });
-  console.log(jobs[0]);
   res.send({ jobs: jobs.map(jobToJson) });
 });
 

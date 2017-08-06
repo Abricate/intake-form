@@ -6,10 +6,10 @@ import moment from 'moment';
 import {Form, FormText,Nav, NavItem, ButtonGroup, Table, Row, Col, Input, InputGroup, InputGroupAddon, NavLink, FormGroup, Label } from 'reactstrap';
 import phonenumber, { PhoneNumberFormat } from 'google-libphonenumber';
 import _ from 'lodash';
-import parseDecimalNumber from 'parse-decimal-number';
 
 import AbricateLogo from '../abricate-logo.png';
 import { getJobsWithIds } from '../api';
+import { fmtDollars, parseDollars } from '../util';
 
 const phoneUtil = phonenumber.PhoneNumberUtil.getInstance();
 
@@ -155,23 +155,6 @@ const InvoiceTemplate = ({ total, shipping, date, customerAddress = {}, setCusto
 </div>
 );
 
-function fmtDollars(number) {
-  if(isNaN(number)) {
-    return '';
-  } else {
-    return '$' + number.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits:2});
-  }
-}
-
-function parseDollars(str) {
-  const dollars = parseDecimalNumber(str);
-  if(!isNaN(dollars)) {
-    return dollars;
-  } else {
-    return undefined;
-  }
-}
-
 const MoneyStyle = {
   textAlign: 'right',
   fontFamily: 'monospace'
@@ -304,30 +287,42 @@ class CreateInvoice extends React.Component {
     contactInfo = {...contactInfo, ...this.state.customerAddress};
     
     const editable = !this.props.match.params.isPreview;
+
+    const unitPrice = job => {
+      if(this.state.prices[job.id] != null) {
+        return this.state.prices[job.id];
+      }
+
+      if(job.unitPrice != null) {
+        return { value: job.unitPrice, str: job.unitPrice.toString() };
+      }
+
+      return undefined;
+    };
     
     return (
       <div>
         <Prompt
           when={isBlocking}
           message={location => {
-            if(!location.pathname.startsWith('/invoicing/create/')) {
-              return "Your invoice isn't saved. Discard changes?";
-            }
+              if(!location.pathname.startsWith('/invoicing/create/')) {
+                return "Your invoice isn't saved. Discard changes?";
+              }
           }}
         />
 
         <Nav tabs>
           <NavItem>
             <NavLink exact
-              tag={ReactRouterNavLink}
-              to={`/invoicing/create/${this.props.match.params.jobIds}`}>
+                     tag={ReactRouterNavLink}
+                     to={`/invoicing/create/${this.props.match.params.jobIds}`}>
               Edit
             </NavLink>
           </NavItem>
           <NavItem>
             <NavLink exact
-              tag={ReactRouterNavLink}
-              to={this.props.match.params.isPreview ? this.props.match.url : `${this.props.match.url}/preview`}>
+                     tag={ReactRouterNavLink}
+                     to={this.props.match.params.isPreview ? this.props.match.url : `${this.props.match.url}/preview`}>
               Preview
             </NavLink>
           </NavItem>
@@ -351,7 +346,7 @@ class CreateInvoice extends React.Component {
               orderIdentifier: job.orderIdentifier,
               material: `${job.materialThickness} ${job.material}`,
               quantity: job.quantity,
-              unitPrice: this.state.prices[job.id],
+              unitPrice: unitPrice(job),
               setPrice: this.setPrice(job.id),
               setNote: this.setComment(job.id)
             })

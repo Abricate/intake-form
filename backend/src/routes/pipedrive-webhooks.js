@@ -5,14 +5,9 @@ import _ from 'lodash';
 import { promisify } from '../util';
 import config from '../config';
 import customFields from '../pipedrive-custom-fields';
-import { Job, JobFile, InvoiceLineItem } from '../db';
+import { Job, JobFile } from '../db';
 import { diff } from '../util';
 import pipedrive from '../clients/pipedrive';
-
-const pipedriveToInvoiceLineItemMapping = {
-  'Quantity': 'quantity',
-  'Unit Price': 'unitPrice'
-};
 
 const pipedriveToJobPropsMapping = {
   'Material': 'material',
@@ -26,7 +21,8 @@ const pipedriveToJobPropsMapping = {
   'CM: Product ID': 'customMaterial.productId',
   'CM: Dimensions': 'customMaterial.dimensions',
   'CM: Price': 'customMaterial.price',
-  'CM: MSDS Link': 'customMaterial.msdsLink'
+  'CM: MSDS Link': 'customMaterial.msdsLink',
+  'Unit Price': 'unitPrice'
 };
 
 const pipedriveStateMapping = {
@@ -113,28 +109,6 @@ export class PipedriveWebhooks {
         props: JSON.stringify({...props, ...jobPropsToUpdate}),
         ...state
       });
-
-      const invoiceLineItemFieldsToUpdate = _.omit(
-        _.mapKeys(updatedFieldsMapped, (value, key) =>
-          pipedriveToInvoiceLineItemMapping.hasOwnProperty(key) ? pipedriveToInvoiceLineItemMapping[key] : null
-        ), null
-      );
-
-      const [ invoiceLineItem, created ] = await InvoiceLineItem.findOrCreate({
-        where: { jobId: job.id },
-        defaults: {
-          props: JSON.stringify({ job }),
-          quantity: job.quantity,
-          ...invoiceLineItemFieldsToUpdate
-        }
-      });
-
-      if(!created) {
-        await invoiceLineItem.update({
-          quantity: job.quantity,
-          ...invoiceLineItemFieldsToUpdate
-        });
-      }
     }
   }
 

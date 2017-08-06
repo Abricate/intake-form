@@ -4,7 +4,7 @@ import sinon from 'sinon';
 import { expect } from './helper';
 
 import { PipedriveWebhooks } from '../src/routes/pipedrive-webhooks';
-import { Job, InvoiceLineItem } from '../src/db';
+import { Job } from '../src/db';
 
 const customFieldNames = [
   'Files',
@@ -106,45 +106,28 @@ describe('pipedrive-webhooks', function() {
   });
   
   describe('handlePipedriveDealUpdate', function() {
-    it('should create invoice line item when price is set', async function() {
+    it('should add unitPrice props when price is set', async function() {
+      let job = await Job.findById(initialJob.id);
+      expect(job.propsParsed().unitPrice).to.be.undefined;
+
       await pipedriveWebhooks.handlePipedriveDealUpdate(createWebhookPayload({
         currentDeal: {'Unit Price': 12.34}
       }));
       
-      const job = await Job.findById(initialJob.id, {include: [ InvoiceLineItem ] });
-      expect(job.invoice_line_items).to.have.lengthOf(1);
-      const [ item ] = job.invoice_line_items;
-      expect(item).to.have.property('unitPrice', '12.34');
+      job = await Job.findById(initialJob.id);
+      expect(job.propsParsed().unitPrice).to.equal(12.34);
     });
 
-    it('should update existing invoice line item when price is changed', async function() {
+    it('should update job when price is changed', async function() {
       await pipedriveWebhooks.handlePipedriveDealUpdate(createWebhookPayload({
         currentDeal: {'Unit Price': 12.34}
       }));
-      
       await pipedriveWebhooks.handlePipedriveDealUpdate(createWebhookPayload({
-        currentDeal: {'Unit Price': 12.56}
-      }));
-
-      const job = await Job.findById(initialJob.id, {include: [ InvoiceLineItem ] });
-      expect(job.invoice_line_items).to.have.lengthOf(1);
-      const [ item ] = job.invoice_line_items;
-      expect(item).to.have.property('unitPrice', '12.56');
-    });
-
-    it('should update existing invoice line item when quantity is changed', async function() {
-      await pipedriveWebhooks.handlePipedriveDealUpdate(createWebhookPayload({
-        currentDeal: {'Quantity': 10}
+        currentDeal: {'Unit Price': 12.35}
       }));
       
-      await pipedriveWebhooks.handlePipedriveDealUpdate(createWebhookPayload({
-        currentDeal: {'Quantity': 3}
-      }));
-
-      const job = await Job.findById(initialJob.id, {include: [ InvoiceLineItem ] });
-      expect(job.invoice_line_items).to.have.lengthOf(1);
-      const [ item ] = job.invoice_line_items;
-      expect(item).to.have.property('quantity', 3);
+      const job = await Job.findById(initialJob.id);
+      expect(job.propsParsed().unitPrice).to.equal(12.35);
     });
 
     it('should update job state', async function() {

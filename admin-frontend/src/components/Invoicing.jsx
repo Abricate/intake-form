@@ -5,6 +5,7 @@ import { Button, Input, Table } from 'reactstrap';
 import _ from 'lodash';
 
 import { addJobsToInvoice } from '../actions';
+import { fmtDollars } from '../util';
 
 class Invoicing extends Component {
   constructor(props) {
@@ -60,6 +61,7 @@ class Invoicing extends Component {
               <th>Customer</th>
               <th>Material</th>
               <th>Quantity</th>
+              <th>Unit Price</th>
             </tr>
           </thead>
           <tbody>
@@ -89,6 +91,7 @@ const JobRow = ({ job, selected, toggleSelect }) => (
     <td>{job.contactInfo.name} &lt;{job.contactInfo.email}&gt;</td>
     <td>{job.materialThickness} {job.material}</td>
     <td>{job.quantity}</td>
+    <td>{fmtDollars(job.unitPrice)}</td>
   </tr>
 );
 
