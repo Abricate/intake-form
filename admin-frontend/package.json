@@ -6,6 +6,8 @@
   "homepage": "/admin",
   "dependencies": {
     "bootstrap": "4.0.0-alpha.6",
+    "google-libphonenumber": "^3.0.0",
+    "query-string": "^5.0.0",
     "react": "^15.6.1",
     "react-addons-css-transition-group": "^15.6.0",
     "react-addons-transition-group": "^15.6.0",
@@ -13,9 +15,11 @@
     "react-redux": "^5.0.5",
     "react-router-dom": "^4.1.2",
     "reactstrap": "^4.8.0",
-    "redux": "^3.7.2"
+    "redux": "^3.7.2",
+    "redux-saga": "^0.15.6"
   },
   "devDependencies": {
+    "babel-cli": "^6.24.1",
     "react-scripts": "1.0.10"
   },
   "scripts": {

@@ -5,3 +5,11 @@ export function setUser(user) {
     user
   };
 }
+
+export const ADD_JOBS_TO_INVOICE = 'ADD_JOBS_TO_INVOICE';
+export function addJobsToInvoice(jobIds) {
+  return {
+    type: ADD_JOBS_TO_INVOICE,
+    jobIds
+  };
+}

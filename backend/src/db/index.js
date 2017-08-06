@@ -110,12 +110,12 @@ Order.belongsTo(User);
 Order.hasMany(Job);
 User.hasMany(Order);
 ContactInfo.belongsTo(Order);
-Order.hasOne(ContactInfo, {as: 'ContactInfo'});
+Order.hasOne(ContactInfo);
 Invoice.belongsTo(Order);
 InvoiceLineItem.belongsTo(Invoice);
 InvoiceLineItem.belongsTo(Job);
 
-export async function createOrder(order) {
+export async function createOrder(orderDefaults) {
   let tries = 100;
   
   while(tries > 0) {
@@ -123,7 +123,7 @@ export async function createOrder(order) {
     
     const [ order, created ] = await Order.findOrCreate({
       where: { orderIdentifier },
-      defaults: order
+      defaults: orderDefaults
     });
 
     if(created) {

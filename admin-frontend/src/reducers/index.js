@@ -1,6 +1,7 @@
+import _ from 'lodash';
 import { combineReducers } from 'redux';
 
-import { SET_USER } from '../actions';
+import { ADD_JOBS_TO_INVOICE, SET_USER } from '../actions';
 
 const user = (state = {}, action) => {
   switch(action.type) {
@@ -14,6 +15,20 @@ const user = (state = {}, action) => {
   return state;
 }
 
+const invoice = (state = {jobIds: {}}, action) => {
+  switch(action.type) {
+    case ADD_JOBS_TO_INVOICE:
+      const newJobIds = _.fromPairs(action.jobIds.map( jobId => [jobId, true] ));
+      
+      return {
+        jobIds: {...state.jobIds, newJobIds}
+      };
+  }
+
+  return state;
+}
+
 export default combineReducers({
-  user
+  user,
+  invoice
 });
