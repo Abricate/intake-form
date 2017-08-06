@@ -9,3 +9,9 @@ export function notFound(message = 'Not found') {
   err.status = 404;
   return error;
 }
+
+export function badRequest(message = 'Bad request') {
+  const error = new Error(message);
+  err.status = 400;
+  return error;
+}

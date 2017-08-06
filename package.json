@@ -54,7 +54,8 @@
     "sequelize": "^3.30.4",
     "sequelize-cli": "^2.7.0",
     "serve-favicon": "^2.4.3",
-    "string-replace-middleware": "0.0.1"
+    "string-replace-middleware": "0.0.1",
+    "zipcodes": "^3.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

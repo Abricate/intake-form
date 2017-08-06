@@ -9,6 +9,7 @@ import {
 import './App.css';
 
 import AdminNavbar from './components/AdminNavbar';
+import CreateInvoice from './components/CreateInvoice';
 import Invoicing from './components/Invoicing';
 import Login from './components/Login';
 
@@ -35,7 +36,8 @@ class App extends Component {
 
           <Container>
             <Route exact path="/login" component={Login} />
-            <Route path="/invoicing" component={Invoicing} />
+            <Route exact path="/invoicing" component={Invoicing} />
+            <Route path="/invoicing/create/:jobIds/:isPreview?" component={CreateInvoice} />
           </Container>
         </div>
       </Router>
