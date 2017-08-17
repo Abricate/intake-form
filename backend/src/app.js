@@ -58,6 +58,18 @@ const indexHtml = (req, res, next) => {
   });
 }
 
+const adminIndexHtml = (req, res, next) => {
+  const csrfToken = req.csrfToken && req.csrfToken();
+  
+  fs.readFile(path.resolve(__dirname, '../../admin-frontend/build/index.html'), 'utf8', (err, data) => {
+    if(err) throw err;
+    res.send(data
+      .replace('__REPLACE_WITH_CSRF_TOKEN__', csrfToken || '')
+      .replace('__REPLACE_WITH_NODE_ENV__', app.settings.env)
+    );
+  });
+}
+
 if(app.settings.env !== 'development') {
   app.use(csurf({ cookie: true }));
 } else {
@@ -65,7 +77,9 @@ if(app.settings.env !== 'development') {
 }
 
 app.get( '/index.html', indexHtml);
+app.get( '/admin/index.html', adminIndexHtml);
 app.get( '/', (req, res, next) => { if(req.path !== '/') next(); else indexHtml(req, res, next); });
+app.get( '/admin', (req, res, next) => { if(req.path !== '/admin') next(); else adminIndexHtml(req, res, next); });
 
 // Priority serve any static files.
 app.use(express.static(path.resolve(__dirname, '../../frontend/build')));
@@ -113,6 +127,7 @@ app.use('/admin/jobs', adminJobs);
 app.use('/admin/invoices', adminInvoices);
 
 // all other routes just return index.html
+app.get('/admin/*', adminIndexHtml);
 app.get('*', indexHtml);
 
 // catch 404 and forward to error handler
