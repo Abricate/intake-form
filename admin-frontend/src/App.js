@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Container } from 'reactstrap';
+import { Alert, Container } from 'reactstrap';
 import {
   BrowserRouter as Router,
   Route
@@ -10,8 +10,11 @@ import './App.css';
 
 import AdminNavbar from './components/AdminNavbar';
 import CreateInvoice from './components/CreateInvoice';
+import ViewInvoice from './components/ViewInvoice';
 import Invoicing from './components/Invoicing';
 import Login from './components/Login';
+
+import Flash from './components/Flash';
 
 import { setUser } from './actions';
 
@@ -33,11 +36,12 @@ class App extends Component {
       <Router basename="/admin">
         <div>
           <AdminNavbar />
-
+          <Flash />
           <Container>
             <Route exact path="/login" component={Login} />
             <Route exact path="/invoicing" component={Invoicing} />
             <Route path="/invoicing/create/:jobIds/:isPreview?" component={CreateInvoice} />
+            <Route path="/invoicing/by-id/:invoiceIdentifier" component={ViewInvoice} />
           </Container>
         </div>
       </Router>

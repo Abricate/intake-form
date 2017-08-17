@@ -86,13 +86,13 @@ export const Invoice = sequelize.define('invoice', {
   identifier: {type: Sequelize.STRING(16), unique: true},
   shippingAddress: Sequelize.JSONB,
   billingAddress: Sequelize.JSONB,
-  shippingCost: Sequelize.INTEGER,
+  shippingCost: Sequelize.DECIMAL,
   published: Sequelize.BOOLEAN,
   paid: Sequelize.BOOLEAN
 });
 
 export const InvoiceLineItem = sequelize.define('invoice_line_item', {
-  props: Sequelize.TEXT,
+  props: Sequelize.JSONB,
   description: Sequelize.STRING,
   quantity: Sequelize.INTEGER,
   unitPrice: Sequelize.DECIMAL
@@ -106,6 +106,7 @@ BoxFile.belongsTo(Job);
 Job.belongsTo(Order);
 Job.hasMany(BoxFile);
 Job.hasMany(InvoiceLineItem);
+Invoice.hasMany(InvoiceLineItem);
 Order.belongsTo(User);
 Order.hasMany(Job);
 User.hasMany(Order);
@@ -156,6 +157,27 @@ export async function createBoxFile(boxFile) {
   }
 
   throw Error('failed to create boxFile with unique identifier');
+}
+
+export async function createInvoice(invoiceDefaults) {
+  let tries = 100;
+  
+  while(tries > 0) {
+    const identifier = await randomBytes(8).then(x => x.toString('hex'));
+    
+    const [ invoice, created ] = await Invoice.findOrCreate({
+      where: { identifier },
+      defaults: invoiceDefaults
+    });
+
+    if(created) {
+      return invoice;
+    }
+
+    tries -= 1;
+  }
+
+  throw Error('failed to create invoice with unique identifier');
 }
 
 if(process.env.NODE_ENV !== 'test') {

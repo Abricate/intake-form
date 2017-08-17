@@ -34,6 +34,7 @@ var uploads = require('./routes/uploads');
 var jobs = require('./routes/jobs');
 var auth = require('./routes/auth');
 var adminJobs = require('./routes/admin/jobs');
+var adminInvoices = require('./routes/admin/invoices');
 var user = require('./routes/user');
 var pipedriveWebhooks = require('./routes/pipedrive-webhooks').default;
 
@@ -109,6 +110,7 @@ app.use('/jobs', jobs);
 app.use('/auth', auth);
 app.use('/user', user);
 app.use('/admin/jobs', adminJobs);
+app.use('/admin/invoices', adminInvoices);
 
 // all other routes just return index.html
 app.get('*', indexHtml);

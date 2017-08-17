@@ -25,3 +25,10 @@ export function diff(a, b) {
     a[key] === value || _.isEqual(a[key], value)
   );
 }
+
+// http://2ality.com/2015/01/es6-set-operations.html
+export function setDifference(as, bs) {
+  return new Set(
+    [...as].filter(x => !bs.has(x))
+  );
+}

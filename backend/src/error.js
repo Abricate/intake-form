@@ -6,12 +6,12 @@ export function forbidden(message = 'Forbidden') {
 
 export function notFound(message = 'Not found') {
   const error = new Error(message);
-  err.status = 404;
+  error.status = 404;
   return error;
 }
 
 export function badRequest(message = 'Bad request') {
   const error = new Error(message);
-  err.status = 400;
+  error.status = 400;
   return error;
 }

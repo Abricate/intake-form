@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { NavLink as ReactRouterNavLink } from 'react-router-dom';
 import {Prompt, withRouter } from 'react-router';
 import moment from 'moment';
-import {Form, FormText,Nav, NavItem, ButtonGroup, Table, Row, Col, Input, InputGroup, InputGroupAddon, NavLink, FormGroup, Label } from 'reactstrap';
+import {Button, Form, FormText,Nav, NavItem, ButtonGroup, Table, Row, Col, Input, InputGroup, InputGroupAddon, NavLink, FormGroup, Label } from 'reactstrap';
 import phonenumber, { PhoneNumberFormat } from 'google-libphonenumber';
 import _ from 'lodash';
 
 import AbricateLogo from '../abricate-logo.png';
-import { getJobsWithIds } from '../api';
+import * as api from '../api';
 import { fmtNumber, fmtDollars, parseDollars } from '../util';
 
 const phoneUtil = phonenumber.PhoneNumberUtil.getInstance();
@@ -77,7 +77,8 @@ const EditableAddress = ({ name, address1, address2, city, state, zipcode, phone
 
 const Address = Editable(StaticAddress, EditableAddress);
 
-const InvoiceTemplate = ({
+export const InvoiceTemplate = ({
+  identifier = '',
   customerAddress = {},
   date,
   shipping = {},
@@ -105,7 +106,7 @@ const InvoiceTemplate = ({
           <tbody>
             <tr>
               <th>Invoice #</th>
-              <td>12341</td>
+              <td>{identifier}</td>
             </tr>
             <tr>
               <th>Date</th>
@@ -172,7 +173,7 @@ const MoneyStyle = {
   fontFamily: 'monospace'
 };
 
-const InvoiceLineItem = ({ filename, note, orderIdentifier, material, quantity, unitPrice = {}, setPrice, setNote, editable = true }) => {
+export const InvoiceLineItem = ({ filename, note, orderIdentifier, material, quantity, unitPrice = {}, setPrice, setNote, editable = true }) => {
   let result = [];
   
   const row = (
@@ -231,11 +232,12 @@ class CreateInvoice extends React.Component {
     this.setComment = this.setComment.bind(this);
     this.setCustomerAddressField = this.setCustomerAddressField.bind(this);
     this.setShipping = this.setShipping.bind(this);
+    this.createInvoice = this.createInvoice.bind(this);
   }
   
   componentDidMount() {
     const jobIds = this.props.match.params.jobIds.split(',');
-    getJobsWithIds(jobIds).then( jobs => {
+    api.getJobsWithIds(jobIds).then( jobs => {
       const jobsById = _.keyBy(jobs, 'id');
       
       this.setState({ jobs: jobsById });
@@ -279,6 +281,53 @@ class CreateInvoice extends React.Component {
 
     this.setState({ shipping: { str, value } });
   }
+
+  /**
+   * POST /admin/invoices
+   *   {
+   *     shippingAddress <json>,
+   *     billingAddress <json>,
+   *     shippingCost <decimal>,
+   *     lineItems: <array of LineItems>
+   *   }
+   *   
+   *   LineItem:
+   *   {
+   *     props: <json>,
+   *     quantity: <integer>,
+   *     unitPrice: <decimal>
+   *   }
+   */
+
+  
+  createInvoice() {
+    const shippingAddress = this.contactInfo();
+    const billingAddress = this.contactInfo();
+    const shippingCost = (this.state.shipping && this.state.shipping.value) || 0;
+
+    const lineItems = _.mapValues(this.state.jobs, job => {
+      const unitPrice = this.unitPrice(job);
+      
+      return {
+        quantity: job.quantity,
+        unitPrice: (unitPrice && unitPrice.value) || 0,
+        shippingCost,
+        props: {
+          filename: 'foo',
+          comments: this.state.comments[job.id] || job.comments,
+          orderIdentifier: job.orderIdentifier,
+          material: job.material,
+          materialThickness: job.materialThickness,
+        }
+      }
+    });
+    
+    api.createInvoice({ shippingAddress, billingAddress, shippingCost, lineItems }).then( ({ identifier }) => {
+      this.setState({ invoiceCreated: true }, () => {
+        this.props.history.push(`/invoicing/by-id/${identifier}`, {flash: {message: 'Invoice successfully created!'}});
+      });
+    });
+  }
   
   jobs() {
     return this.props.match.params.jobIds.split(',').map( jobId => this.state.jobs[jobId] ).filter(job => job != null);
@@ -296,39 +345,48 @@ class CreateInvoice extends React.Component {
       ...this.state.prices
     };
   }
-      
+
+  contactInfo() {
+    let contactInfo = {};
+    const [ job ] = this.jobs();
+    if(job) {
+      contactInfo = job.contactInfo;
+    }
+    contactInfo = {...contactInfo, ...this.state.customerAddress};
+    return contactInfo;
+  }
+
+  unitPrice(job) {
+    if(this.state.prices[job.id] != null) {
+      return this.state.prices[job.id];
+    }
+
+    if(job.unitPrice != null) {
+      return { value: job.unitPrice, str: job.unitPrice.toString() };
+    }
+
+    return undefined;
+  }    
+    
   render() {
     if(_.isEmpty(this.state.jobs)) return null;
-    
+      
     const jobs = this.jobs();
     const subtotal = _.sum(_.map(this.prices(), ({ value }, jobId) => value ? (value * this.state.jobs[jobId].quantity) : 0));
     const shipping = this.state.shipping;
     const total = subtotal + (shipping != undefined ? shipping.value : 0);
     const date = moment().format('LL');
 
-    const isBlocking = !(_.isEmpty(this.state.prices) && _.isEmpty(this.state.comments) && _.isEmpty(this.state.customerAddress) && this.state.shipping == undefined);
-    
-    let contactInfo = {};
-    const [ job ] = jobs;
-    if(job) {
-      contactInfo = job.contactInfo;
-    }
-    contactInfo = {...contactInfo, ...this.state.customerAddress};
-    
+    const userHasMadeChanges = !(
+      _.isEmpty(this.state.prices) &&
+      _.isEmpty(this.state.comments) &&
+      _.isEmpty(this.state.customerAddress) &&
+      this.state.shipping == undefined
+    );
+    const isBlocking = userHasMadeChanges && !this.state.invoiceCreated;
+      
     const editable = !this.props.match.params.isPreview;
 
-    const unitPrice = job => {
-      if(this.state.prices[job.id] != null) {
-        return this.state.prices[job.id];
-      }
-
-      if(job.unitPrice != null) {
-        return { value: job.unitPrice, str: job.unitPrice.toString() };
-      }
-
-      return undefined;
-    };
-    
     return (
       <div>
         <Prompt
@@ -355,6 +413,7 @@ class CreateInvoice extends React.Component {
               Preview
             </NavLink>
           </NavItem>
+          <Button onClick={this.createInvoice} className="ml-auto" color="primary">Create</Button>
         </Nav>
 
 
@@ -364,7 +423,7 @@ class CreateInvoice extends React.Component {
           shipping={shipping}
           setShipping={this.setShipping}
           date={date}
-          customerAddress={contactInfo}
+          customerAddress={this.contactInfo()}
           setCustomerAddressField={this.setCustomerAddressField}>
           
           {_.flatMap(jobs, job => (
@@ -375,7 +434,7 @@ class CreateInvoice extends React.Component {
               orderIdentifier: job.orderIdentifier,
               material: `${job.materialThickness} ${job.material}`,
               quantity: job.quantity,
-              unitPrice: unitPrice(job),
+              unitPrice: this.unitPrice(job),
               setPrice: this.setPrice(job.id),
               setNote: this.setComment(job.id)
             })
