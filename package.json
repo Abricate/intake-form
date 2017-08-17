@@ -9,7 +9,7 @@
     "test": "NODE_ENV=test backend/bin/wipe_db_for_tests && NODE_ENV=test mocha --compilers js:babel-core/register backend/test/",
     "test-circleci": "backend/bin/run-tests-for-circleci",
     "test-no-wipe-db": "NODE_ENV=test mocha --compilers js:babel-core/register backend/test/",
-    "heroku-postbuild": "npm install --only=dev && npm install && npm run build && cd frontend/ && npm install --only=dev && npm install && npm run build && cd ../admin-frontend/ && npm install --only=dev && npm install && npm run build",
+    "heroku-postbuild": "scripts/heroku-postbuild.sh",
     "db:migrate": "babel-node scripts/sequelize.js db:migrate",
     "db:migrate:undo": "babel-node scripts/sequelize.js db:migrate:undo",
     "heroku:db:migrate": "heroku run -a intake-form-staging npm run db:migrate",
