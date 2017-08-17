@@ -9,7 +9,10 @@ export async function getJobsWithIds(jobIds) {
 export async function createInvoice(invoice) {
   return await fetch('/admin/invoices', {
     method: 'POST',
-    headers: { 'Content-type': 'application/json' },
+    headers: {
+      'Content-type': 'application/json',
+      'x-csrf-token': window.__CSRF_TOKEN__
+    },
     body: JSON.stringify(invoice),
     credentials: 'include'
   }).then( response => response.json() );
