@@ -79,7 +79,8 @@ export const BoxFile = sequelize.define('box_file', {
   identifier: {type: Sequelize.STRING(16), unique: true},
   boxId: {type: Sequelize.STRING, unique: true},
   sharedLinkUrl: Sequelize.TEXT,
-  downloadUrl: Sequelize.TEXT  
+  downloadUrl: Sequelize.TEXT,
+  props: Sequelize.JSONB
 });
 
 export const Invoice = sequelize.define('invoice', {
