@@ -91,6 +91,13 @@ ${contactInfo.zipcode || ''}, ${contactInfo.country || ''}`.trim();
       person_id: pipedrivePerson && parseInt(pipedrivePerson.personId),
       custom: {
         'Files': _.map(boxFiles, 'sharedLinkUrl').join(' '),
+        'Cut Length': boxFiles.map(boxFile => {
+          if(boxFile.props && boxFile.props.pathLength) {
+            return `${boxFile.props.pathLength.length} ${boxFile.props.pathLength.units}`;
+          } else {
+            return '(null)';
+          }
+        }).join("\n"),
         'Material': jobProps.material,
         'Color': jobProps.color,
         'Material Thickness': jobProps.materialThickness,
@@ -104,7 +111,7 @@ ${contactInfo.zipcode || ''}, ${contactInfo.country || ''}`.trim();
         'CM: Dimensions': jobProps['customMaterial.dimensions'],
         'CM: Price': jobProps['customMaterial.price'],
         'CM: MSDS Link': jobProps['customMaterial.msdsLink'],
-      }
+        }
     });
     await Job.update({pipedriveDealId: deal.id}, {where: {id: job.id}})
   }));

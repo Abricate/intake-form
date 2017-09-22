@@ -16,6 +16,8 @@ const customFields = {
   'CM: Dimensions': 'varchar',
   'CM: Price': 'varchar',
   'CM: MSDS Link': 'varchar',
+  /** for estimation */
+  'Cut Length': 'varchar',
   /** for invoicing */
   'Unit Price': 'monetary'
 };

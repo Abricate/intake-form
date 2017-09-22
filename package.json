@@ -34,6 +34,8 @@
     "crypto-js": "^3.1.9-1",
     "csurf": "^1.9.0",
     "debug": "^2.6.8",
+    "dxf": "^2.4.2",
+    "dxf-parser": "^0.4.8",
     "ejs": "~2.5.6",
     "express": "^4.15.3",
     "express-basic-auth": "^1.1.1",
@@ -55,6 +57,8 @@
     "sequelize-cli": "^2.7.0",
     "serve-favicon": "^2.4.3",
     "string-replace-middleware": "0.0.1",
+    "svg.js": "^2.6.3",
+    "svgdom": "0.0.15",
     "zipcodes": "^3.0.0"
   },
   "devDependencies": {

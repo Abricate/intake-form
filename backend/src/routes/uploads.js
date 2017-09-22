@@ -1,9 +1,12 @@
 import crypto from 'crypto';
 import express from 'express';
+import fs from 'fs';
 import multer from 'multer';
 import _ from 'lodash';
 import path from 'path';
 import { extension as mimeExtension, lookup as mimeLookup } from 'mime-types';
+import DxfParser from 'dxf-parser';
+import Dxf from 'dxf';
 
 import db, { createBoxFile } from '../db';
 import box, { uploadFileToBox } from '../clients/box';
@@ -51,7 +54,7 @@ router.post('/', upload.array('files'), async function(req, res) {
        *   - mimetype using mime magic from file contents
        *   - extension for mime magic inferred mimetype
        */
-                       
+      
       let mimetype, extension;
       
       if(!fileMimetypeBlacklist.includes(file.mimetype)) {
@@ -78,23 +81,70 @@ router.post('/', upload.array('files'), async function(req, res) {
       const destFilename = extension ? file.filename + '.' + extension : file.filename;
       console.log('uploading to box', filepath, destFilename);
       const boxFile = await uploadFileToBox(filepath, destFilename);
-
+      
       if(boxFile.entries.length !== 1) {
         throw Error('expected one file in Box, got ' + boxFile.entries.length);
       }
+
+      let pathLength = null;
+      if(destFilename.toLowerCase().endsWith('.dxf')) {
+        try {
+          const { dxf, parsedDxf } = await new Promise( (resolve, reject) => {
+            fs.readFile(filepath, 'utf8', (err, data) => {
+              if(err) {
+                console.error('Error reading uploaded DXF file', err);
+              } else {
+                const parsedDxf = Dxf.parseString(data);
+
+                const parser = new DxfParser();
+
+                const dxf = parser.parseSync(data);
+                if(err) {
+                  reject(err);
+                } else {
+                  resolve({ parsedDxf, dxf });
+                }
+              }
+            })
+          });
+          
+          const svg = Dxf.toSVG(parsedDxf);
+
+          // see https://github.com/svgdotjs/svgdom
+          const window   = require('svgdom');
+          const SVG      = require('svg.js')(window);
+          const document = window.document
+
+          // create svg.js instance
+          const draw = SVG(document.documentElement)
+
+          const svgDocument = draw.svg(svg);
+          var lengths = [];
+          svgDocument.select('path').each( function() { lengths.push(this.length()); })
+          const totalPathLength = _.sum(lengths);
+
+          pathLength = {
+            length: totalPathLength,
+            units: dxf && dxf.header['$MEASUREMENT'] === 0 ? 'in' : 'mm'
+          }
+        } catch(err) {
+          console.error('Error parsing uploaded DXF file', err);
+        }
+      }
       
-      return [file.originalname, boxFile.entries[0]];
+      return [file.originalname, { boxFile: boxFile.entries[0], pathLength }];
     })
   ));
 
   const dbFiles = _.fromPairs(await Promise.all(
-    _.map(boxFiles, async (boxFile, originalname) => {
+    _.map(boxFiles, async ({ boxFile, pathLength }, originalname) => {
       const { shared_link } = await box.files.update(boxFile.id, { shared_link: {access: 'collaborators'} });
       
       const dbFile = await createBoxFile({
         boxId: boxFile.id,
         sharedLinkUrl: shared_link.url,
         downloadUrl: shared_link.download_url,
+        props: { pathLength }
       });
 
       return [originalname, dbFile];
