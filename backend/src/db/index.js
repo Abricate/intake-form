@@ -112,7 +112,7 @@ Order.belongsTo(User);
 Order.hasMany(Job);
 User.hasMany(Order);
 ContactInfo.belongsTo(Order);
-Order.hasOne(ContactInfo);
+Order.hasOne(ContactInfo, {as: 'ContactInfo'});
 Invoice.belongsTo(Order);
 InvoiceLineItem.belongsTo(Invoice);
 InvoiceLineItem.belongsTo(Job);
